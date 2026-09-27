@@ -1,0 +1,38 @@
+# Gitleaks Configuration for DevSecOps Pipeline
+title = "TaskShield Gitleaks Secrets Detection Configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist for safe templates, docs, and test fixtures"
+paths = [
+  '''^\.env\.example$''',
+  '''^package-lock\.json$''',
+  '''^docs/''',
+  '''^README\.md$''',
+  '''^exploits/'''
+]
+
+# Custom Rule for Hardcoded JWT Secrets
+[[rules]]
+id = "hardcoded-jwt-secret"
+description = "Detected potential hardcoded JWT secret in source code"
+regex = '''(?i)(jwt_secret|jwtSecret|jwt_token_secret)\s*[:=]\s*['"][a-zA-Z0-9_\-!@#$%^&*]{5,}['"]'''
+secretGroup = 0
+keywords = [
+  "jwt_secret",
+  "jwtSecret"
+]
+entropy = 3.0
+
+# Custom Rule for Hardcoded Database Passwords
+[[rules]]
+id = "hardcoded-db-password"
+description = "Detected potential hardcoded Database Password in code"
+regex = '''(?i)(db_password|dbPassword|database_password)\s*[:=]\s*['"][^'"]{5,}['"]'''
+secretGroup = 0
+keywords = [
+  "db_password",
+  "dbPassword"
+]

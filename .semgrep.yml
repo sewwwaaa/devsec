@@ -1,0 +1,56 @@
+rules:
+  - id: devsec-sql-nosql-injection
+    patterns:
+      - pattern-either:
+          - pattern: $DB.all(`... ${$VAL} ...`, ...)
+          - pattern: $DB.get(`... ${$VAL} ...`, ...)
+          - pattern: $DB.run(`... ${$VAL} ...`, ...)
+          - pattern: $DB.all($QUERY + $VAL, ...)
+          - pattern: $DB.get($QUERY + $VAL, ...)
+    message: "Detected unparameterized query with string concatenation. Use parameterized queries (? or $1) to prevent SQL Injection (CWE-89)."
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      owasp: "A03:2021 - Injection"
+
+  - id: devsec-stored-xss-unescaped-output
+    patterns:
+      - pattern-either:
+          - pattern: res.send(`... ${$UNSAFE} ...`)
+          - pattern: element.innerHTML = $UNSAFE
+          - pattern: $RES.write(`... ${$UNSAFE} ...`)
+    message: "Potential Cross-Site Scripting (XSS). Direct unescaped output rendering detected. Sanitize input or use context-aware escaping (CWE-79)."
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      owasp: "A03:2021 - Injection"
+
+  - id: devsec-hardcoded-jwt-secret
+    patterns:
+      - pattern-either:
+          - pattern: jwt.sign($PAYLOAD, "...", ...)
+          - pattern: jwt.verify($TOKEN, "...", ...)
+          - pattern: const $SEC = process.env.JWT_SECRET || "..."
+    message: "Hardcoded or default fallback JWT secret detected. Secrets must be supplied via secure environment variables or vault (CWE-798)."
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      owasp: "A07:2021 - Identification and Authentication Failures"
+
+  - id: devsec-missing-authorization-check
+    patterns:
+      - pattern: |
+          app.delete('/api/notes/:id', function ($REQ, $RES) {
+            ...
+            $DB.run("DELETE FROM notes WHERE id = ?", [$REQ.params.id], ...);
+            ...
+          })
+    message: "BOLA / IDOR detected: Resource accessed or deleted by ID without verifying owner identity against req.user.id (CWE-639)."
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-639: Authorization Bypass Through User-Controlled Key"
+      owasp: "A01:2021 - Broken Access Control"

@@ -1,0 +1,36 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and Secrets (CRITICAL for DevSecOps requirement 2.5)
+.env
+.env.local
+.env.production
+*.pem
+*.key
+*.cert
+vault_token.txt
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Build outputs & caches
+dist/
+build/
+.cache/
+coverage/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# SAST and scanner reports (temporary run artifacts)
+trivy-results.sarif
+semgrep-results.json
+gitleaks-report.json
+zap-report.html
+zap-report.json

@@ -1,0 +1,166 @@
+name: DevSecOps Automated CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # =============================================================
+  # Job 1: Build & Automated Unit/Security Tests
+  # =============================================================
+  build-and-test:
+    name: 🏗️ Build & Functional Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Run Functional Security Tests
+        working-directory: ./backend
+        run: npm test
+
+  # =============================================================
+  # Gate 1: Static Application Security Testing (SAST)
+  # =============================================================
+  sast-semgrep:
+    name: 🔍 Gate 1: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep SAST Scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/owasp-top-ten
+            p/javascript
+          generateSarif: "1"
+
+      - name: Upload SAST SARIF to GitHub Security Tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+
+  # =============================================================
+  # Gate 2: Software Composition Analysis (SCA / Dependencies)
+  # =============================================================
+  dependency-scan:
+    name: 📦 Gate 2: SCA (npm audit & Trivy FS)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run npm audit (Blocks build on HIGH or CRITICAL flaws)
+        working-directory: ./backend
+        # Note: If high vulnerabilities exist, this returns exit code 1 and FAILS the build
+        run: npm audit --audit-level=high
+
+      - name: Run Trivy Filesystem Scan (SCA)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './backend'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0' # Audit mode for FS while npm audit enforces block
+
+  # =============================================================
+  # Gate 3: Secret Detection (Gitleaks)
+  # =============================================================
+  secret-scan:
+    name: 🔑 Gate 3: Secrets Scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code with Full Git History
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks Secret Detector
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  # =============================================================
+  # Gate 4: Container Security Scanning (Trivy Container Scan)
+  # =============================================================
+  container-security:
+    name: 🐳 Gate 4: Container Scan (Trivy)
+    runs-on: ubuntu-latest
+    needs: [sast-semgrep, dependency-scan, secret-scan]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Docker Image
+        run: |
+          docker build -t taskshield-backend:${{ github.sha }} -f Dockerfile .
+
+      - name: Run Trivy Container Vulnerability Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: taskshield-backend:${{ github.sha }}
+          format: 'table'
+          exit-code: '1' # Fails the pipeline if CRITICAL vulnerabilities exist in image
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL'
+
+  # =============================================================
+  # Gate 5 (Extra Credit): Dynamic Application Security Testing (DAST)
+  # =============================================================
+  dast-zap-scan:
+    name: 🎯 Extra Credit: DAST (OWASP ZAP)
+    runs-on: ubuntu-latest
+    needs: container-security
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Start Application Stack via Docker Compose
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci_cd_temporary_random_jwt_secret_token_12345' }}
+        run: |
+          docker compose up -d --build
+          sleep 15
+          curl -I http://localhost:8080/ || curl -I http://localhost:5000/api/health
+
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
+          target: 'http://localhost:5000/api/health'
+          rules_file_name: '.zap/rules.tsv'
+          allow_issue_writing: false
+          cmd_options: '-m 1'
+        continue-on-error: true # Report findings for review

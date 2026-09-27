@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TaskShield - DevSecOps Secure Task Management Platform with Built-in Security Automation & Exploit Demonstrations">
+  <title>TaskShield | DevSecOps Pipeline & Security Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-shield-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">TaskShield <span class="badge badge-devsecops">DevSecOps v1.0</span></h1>
+          <p class="brand-subtitle">IE3142 DevOps Security & Pipeline Orchestration Platform</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div id="user-badge" class="user-badge hidden">
+          <span class="status-indicator"></span>
+          <span id="current-username">alice</span>
+          <span id="current-role" class="badge badge-role">user</span>
+          <button id="logout-btn" class="btn btn-outline-sm">Logout</button>
+        </div>
+        <div id="auth-buttons" class="auth-buttons">
+          <button id="open-login-btn" class="btn btn-primary">Sign In</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="app-main">
+    <!-- Security Pipeline Status Banner -->
+    <section class="pipeline-summary-card">
+      <div class="pipeline-header">
+        <div class="pipeline-title">
+          <span class="pulse-dot"></span>
+          <h3>Continuous Security Pipeline Gates (SLIIT IE3142 LO3)</h3>
+        </div>
+        <span class="pipeline-state-badge">All 4 Gates Operational</span>
+      </div>
+      <div class="gates-grid">
+        <div class="gate-item">
+          <div class="gate-status pass">✓ PASS</div>
+          <div class="gate-info">
+            <span class="gate-name">Gate 1: SAST (Semgrep)</span>
+            <span class="gate-metric">0 Critical / Custom OWASP Rules</span>
+          </div>
+        </div>
+        <div class="gate-item">
+          <div class="gate-status pass">✓ PASS</div>
+          <div class="gate-info">
+            <span class="gate-name">Gate 2: SCA (npm audit)</span>
+            <span class="gate-metric">Dependency Vulnerability Threshold</span>
+          </div>
+        </div>
+        <div class="gate-item">
+          <div class="gate-status pass">✓ PASS</div>
+          <div class="gate-info">
+            <span class="gate-name">Gate 3: Secrets (Gitleaks)</span>
+            <span class="gate-metric">Zero Hardcoded Credentials</span>
+          </div>
+        </div>
+        <div class="gate-item">
+          <div class="gate-status pass">✓ PASS</div>
+          <div class="gate-info">
+            <span class="gate-name">Gate 4: Container (Trivy)</span>
+            <span class="gate-metric">Multi-stage Base OS Hardened</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Navigation Tabs -->
+    <div class="tab-navigation">
+      <button class="tab-btn active" data-tab="tab-tasks">Tasks & Notes Workspace</button>
+      <button class="tab-btn" data-tab="tab-exploits">Exploit-and-Fix Sandbox (LO2)</button>
+      <button class="tab-btn" data-tab="tab-threat-model">STRIDE Threat Model</button>
+      <button class="tab-btn" data-tab="tab-audit-logs">Audit Logs & SIEM</button>
+    </div>
+
+    <!-- Tab 1: Task and Note Management Workspace -->
+    <section id="tab-tasks" class="tab-content active">
+      <div class="workspace-grid">
+        <!-- New Task Creation Panel -->
+        <div class="card create-card">
+          <div class="card-header">
+            <h3>Create Secure Note / Task</h3>
+            <span class="secure-tag">XSS-Sanitized</span>
+          </div>
+          <form id="create-note-form">
+            <div class="form-group">
+              <label for="note-title">Title</label>
+              <input type="text" id="note-title" placeholder="e.g. Q3 Cloud Architecture Review" required>
+            </div>
+            <div class="form-group">
+              <label for="note-category">Category</label>
+              <select id="note-category">
+                <option value="security">Security & Compliance</option>
+                <option value="devops">DevOps & CI/CD</option>
+                <option value="development">Software Engineering</option>
+                <option value="finance">Confidential Finance</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="note-content">Task Content / Description</label>
+              <textarea id="note-content" rows="4" placeholder="Enter task details (Protected by sanitize-html & Helmet CSP)..." required></textarea>
+            </div>
+            <div class="form-checkbox">
+              <label>
+                <input type="checkbox" id="note-confidential"> Mark as Confidential Record
+              </label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Save Note to Secure Database</button>
+          </form>
+        </div>
+
+        <!-- Notes Listing Panel -->
+        <div class="card list-card">
+          <div class="card-header">
+            <h3>Your Encrypted Workspace Notes</h3>
+            <button id="refresh-notes-btn" class="btn btn-secondary-sm">↻ Refresh</button>
+          </div>
+          <div id="notes-container" class="notes-container">
+            <div class="empty-state">
+              <p>Sign in to view your isolated tenant records.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 2: Exploit-and-Fix Interactive Sandbox -->
+    <section id="tab-exploits" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3>Exploit-and-Fix Live Demonstration Sandbox</h3>
+            <p class="section-desc">Interactive execution of the 4 assignment vulnerabilities against unmodified vs secured endpoints.</p>
+          </div>
+          <button id="run-all-exploits-btn" class="btn btn-danger-action">⚡ Run All 4 Exploits</button>
+        </div>
+
+        <div class="exploits-grid">
+          <!-- Vulnerability 1 -->
+          <div class="exploit-box">
+            <div class="exploit-header">
+              <span class="badge badge-cwe">CWE-89</span>
+              <h4>1. SQL Injection Authentication Bypass</h4>
+            </div>
+            <p class="exploit-desc">Payload crafts a tautology <code>admin' OR '1'='1</code> bypassing password verification.</p>
+            <div class="exploit-actions">
+              <button class="btn btn-danger-sm btn-exploit" data-exploit="sqli-vuln">Attack Vulnerable</button>
+              <button class="btn btn-success-sm btn-exploit" data-exploit="sqli-secure">Test Secure Fix</button>
+            </div>
+          </div>
+
+          <!-- Vulnerability 2 -->
+          <div class="exploit-box">
+            <div class="exploit-header">
+              <span class="badge badge-cwe">CWE-79</span>
+              <h4>2. Stored Cross-Site Scripting (XSS)</h4>
+            </div>
+            <p class="exploit-desc">Injects arbitrary <code>&lt;script&gt;</code> and <code>&lt;img onerror=...&gt;</code> payloads into task store.</p>
+            <div class="exploit-actions">
+              <button class="btn btn-danger-sm btn-exploit" data-exploit="xss-vuln">Attack Vulnerable</button>
+              <button class="btn btn-success-sm btn-exploit" data-exploit="xss-secure">Test Secure Fix</button>
+            </div>
+          </div>
+
+          <!-- Vulnerability 3 -->
+          <div class="exploit-box">
+            <div class="exploit-header">
+              <span class="badge badge-cwe">CWE-639</span>
+              <h4>3. Broken Object Level Authorization (BOLA)</h4>
+            </div>
+            <p class="exploit-desc">User Bob directly requests Alice's confidential budget record without ownership validation.</p>
+            <div class="exploit-actions">
+              <button class="btn btn-danger-sm btn-exploit" data-exploit="bola-vuln">Attack Vulnerable</button>
+              <button class="btn btn-success-sm btn-exploit" data-exploit="bola-secure">Test Secure Fix</button>
+            </div>
+          </div>
+
+          <!-- Vulnerability 4 -->
+          <div class="exploit-box">
+            <div class="exploit-header">
+              <span class="badge badge-cwe">CWE-798</span>
+              <h4>4. Hardcoded Weak JWT Secret Forgery</h4>
+            </div>
+            <p class="exploit-desc">Attacker offline-signs an unauthorized admin token using hardcoded key <code>secret123</code>.</p>
+            <div class="exploit-actions">
+              <button class="btn btn-danger-sm btn-exploit" data-exploit="jwt-vuln">Attack Vulnerable</button>
+              <button class="btn btn-success-sm btn-exploit" data-exploit="jwt-secure">Test Secure Fix</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Terminal Console Viewer -->
+        <div class="terminal-container">
+          <div class="terminal-bar">
+            <span class="term-dot dot-red"></span>
+            <span class="term-dot dot-yellow"></span>
+            <span class="term-dot dot-green"></span>
+            <span class="terminal-title">DevSecOps Live Exploit & Fix Console Output</span>
+          </div>
+          <pre id="terminal-output" class="terminal-body">> Ready. Select an exploit test above or run the full test suite...</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 3: STRIDE Threat Model & Risk Matrix -->
+    <section id="tab-threat-model" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h3>STRIDE Threat Model & 5x5 Risk Assessment (LO2)</h3>
+          <span class="badge badge-devsecops">6 Core Mitigations Mapped</span>
+        </div>
+        <div class="table-responsive">
+          <table class="stride-table">
+            <thead>
+              <tr>
+                <th>Threat Category</th>
+                <th>Threat Scenario Description</th>
+                <th>Likelihood (1-5)</th>
+                <th>Impact (1-5)</th>
+                <th>Risk Rating</th>
+                <th>Planned & Implemented Control</th>
+                <th>Codebase Location</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Spoofing</strong></td>
+                <td>Attacker signs counterfeit JWT tokens using weak/guessed secret</td>
+                <td>3 (Possible)</td>
+                <td>5 (Severe)</td>
+                <td><span class="risk-pill risk-high">15 (High)</span></td>
+                <td>256-bit dynamic secret from Vault, strict HS256 signature verification</td>
+                <td><code>backend/src/config/secrets.js</code></td>
+              </tr>
+              <tr>
+                <td><strong>Tampering</strong></td>
+                <td>Malicious payload injected into task descriptions (Stored XSS)</td>
+                <td>4 (Likely)</td>
+                <td>4 (Major)</td>
+                <td><span class="risk-pill risk-high">16 (High)</span></td>
+                <td>Strict HTML sanitization via sanitize-html and Helmet CSP headers</td>
+                <td><code>backend/src/controllers/noteController.js</code></td>
+              </tr>
+              <tr>
+                <td><strong>Repudiation</strong></td>
+                <td>Privileged admin deletes logs or modifies data without accountability</td>
+                <td>2 (Unlikely)</td>
+                <td>4 (Major)</td>
+                <td><span class="risk-pill risk-medium">8 (Medium)</span></td>
+                <td>Persistent SQLite security audit logs tracking IP, user, and action</td>
+                <td><code>backend/src/config/db.js (audit_logs)</code></td>
+              </tr>
+              <tr>
+                <td><strong>Information Disclosure</strong></td>
+                <td>SQL injection leaking all user hashes; stack traces leaking paths</td>
+                <td>4 (Likely)</td>
+                <td>5 (Severe)</td>
+                <td><span class="risk-pill risk-critical">20 (Critical)</span></td>
+                <td>Parameterized queries, Joi input validation, central error sanitizer</td>
+                <td><code>backend/src/controllers/authController.js</code></td>
+              </tr>
+              <tr>
+                <td><strong>Denial of Service</strong></td>
+                <td>Credential stuffing brute force or high-frequency request flood</td>
+                <td>4 (Likely)</td>
+                <td>3 (Moderate)</td>
+                <td><span class="risk-pill risk-high">12 (High)</span></td>
+                <td>express-rate-limit throttling on authentication & global API routes</td>
+                <td><code>backend/src/middleware/rateLimiter.js</code></td>
+              </tr>
+              <tr>
+                <td><strong>Elevation of Privilege</strong></td>
+                <td>Tenant boundary violation (BOLA/IDOR) accessing another user's notes</td>
+                <td>4 (Likely)</td>
+                <td>4 (Major)</td>
+                <td><span class="risk-pill risk-high">16 (High)</span></td>
+                <td>Object-level authorization check enforcing note.userId === req.user.id</td>
+                <td><code>backend/src/controllers/noteController.js</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 4: Audit Logs & SIEM -->
+    <section id="tab-audit-logs" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h3>Security Audit Trail & Telemetry</h3>
+          <button id="refresh-audit-btn" class="btn btn-secondary-sm">↻ Refresh Logs</button>
+        </div>
+        <div class="table-responsive">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>User ID</th>
+                <th>Action</th>
+                <th>Status</th>
+                <th>IP Address</th>
+                <th>Event Details</th>
+              </tr>
+            </thead>
+            <tbody id="audit-log-body">
+              <tr>
+                <td colspan="6" class="text-center">Sign in as an administrator to inspect security telemetry.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Login / Register Modal -->
+  <div id="auth-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Sign In to TaskShield</h3>
+        <button id="close-modal-btn" class="btn-close">&times;</button>
+      </div>
+      <form id="auth-form">
+        <div class="form-group">
+          <label for="auth-username">Username</label>
+          <input type="text" id="auth-username" value="alice" required>
+        </div>
+        <div class="form-group">
+          <label for="auth-password">Password</label>
+          <input type="password" id="auth-password" value="AlicePass!2026" required>
+        </div>
+        <div class="auth-presets">
+          <small>Quick test presets:</small>
+          <div class="preset-buttons">
+            <button type="button" class="btn btn-preset" data-u="admin" data-p="AdminSecurePass!2026">Admin</button>
+            <button type="button" class="btn btn-preset" data-u="alice" data-p="AlicePass!2026">Alice (User)</button>
+            <button type="button" class="btn btn-preset" data-u="bob" data-p="BobPass!2026">Bob (User)</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block mt-3">Authenticate</button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>IE3142 DevOps Security &bull; SLIIT Faculty of Computing &bull; Year 3 Semester 1 2026</p>
+      <p class="pipeline-tag">Secured with Semgrep SAST, npm audit SCA, Gitleaks Secret Detection, and Trivy Container Hardening</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

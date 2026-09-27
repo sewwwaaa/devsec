@@ -1,0 +1,57 @@
+```mermaid
+flowchart TB
+    %% Trust Boundary 1: Untrusted Public Internet
+    subgraph TB1 ["Trust Boundary 1: Public Internet (Untrusted Zone)"]
+        UserBrowser["🌐 Client Browser (Alice / Bob / Admin)"]
+        AttackerClient["💀 Threat Actor / Adversary"]
+    end
+
+    %% Trust Boundary 2: DMZ / Presentation Tier
+    subgraph TB2 ["Trust Boundary 2: DMZ / Reverse Proxy (Perimeter Zone)"]
+        NginxFront["🛡️ Frontend Web Server & Reverse Proxy<br/>(Nginx Alpine - Port 80/8080)<br/>• Enforces CSP & HSTS Headers<br/>• Rate-Limiting Filter<br/>• Static Asset Delivery"]
+    end
+
+    %% Trust Boundary 3: Secure Application Tier
+    subgraph TB3 ["Trust Boundary 3: Internal Application Network (Isolated Zone)"]
+        direction TB
+        subgraph ExpressApp ["Node.js / Express Microservice (Port 5000)"]
+            AuthMiddle["Middleware Layer<br/>• Helmet Security Headers<br/>• Express Rate Limiter<br/>• Joi Schema Validator<br/>• JWT Authenticator & RBAC"]
+            AuthCtrl["Auth Controller<br/>• Parameterized SQL<br/>• Bcrypt Hashing (10 rounds)<br/>• HS256 Token Issuer"]
+            NoteCtrl["Note / Task Controller<br/>• sanitize-html Engine<br/>• Multi-tenant Tenant Isolation<br/>• BOLA Ownership Guard"]
+            AuditEngine["Security Audit Logger<br/>• Action Tracking<br/>• Tamper Detection"]
+        end
+    end
+
+    %% Trust Boundary 4: Data & Secrets Storage Tier
+    subgraph TB4 ["Trust Boundary 4: Data & Secrets Persistence (Restricted Zone)"]
+        SQLiteDB[("🗄️ Relational Database (SQLite / Postgres)<br/>• Users Table<br/>• Notes Table (Tenant Isolated)<br/>• Audit Logs Table")]
+        VaultAgent["🔐 HashiCorp Vault / Secret Store<br/>• Dynamic JWT Secret Lease<br/>• Zero Plaintext in Git"]
+    end
+
+    %% Data Flow Connections
+    UserBrowser -->|"HTTPS / TLS (JSON, JWT Bearer)"| NginxFront
+    AttackerClient -->|"Exploit Payloads (SQLi, XSS, BOLA)"| NginxFront
+    
+    NginxFront -->|"Internal Reverse Proxy (HTTP)"| AuthMiddle
+    AuthMiddle --> AuthCtrl
+    AuthMiddle --> NoteCtrl
+    
+    AuthCtrl -->|"Audit Events"| AuditEngine
+    NoteCtrl -->|"Access Violation Logs"| AuditEngine
+    
+    AuthCtrl -->|"Parameterized Queries"| SQLiteDB
+    NoteCtrl -->|"Tenant Scoped Queries (WHERE userId = ?)"| SQLiteDB
+    AuditEngine -->|"Immutable Audit Trail"| SQLiteDB
+
+    VaultAgent -.->|"Dynamic Secret Injection at Runtime"| ExpressApp
+
+    classDef public fill:#fee2e2,stroke:#ef4444,stroke-width:2px,color:#1e293b;
+    classDef dmz fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#1e293b;
+    classDef app fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#1e293b;
+    classDef data fill:#d1fae5,stroke:#10b981,stroke-width:2px,color:#1e293b;
+
+    class UserBrowser,AttackerClient public;
+    class NginxFront dmz;
+    class AuthMiddle,AuthCtrl,NoteCtrl,AuditEngine,ExpressApp app;
+    class SQLiteDB,VaultAgent data;
+```
