@@ -98,7 +98,7 @@ http://localhost:4000
 
 | Student ID | Full Name | Primary Project Role & Domain |
 | :--- | :--- | :--- |
-| **IT24103936** | sewmina G D D | Lead Architect: CI/CD Pipeline & Trivy Container Gates |
-| **IT24103937** | Ashen Dilantha | Security Analyst & Developer: Secure Coding & SSJS/NoSQLi Fixes |
-| **IT24103938** | Student Member 3 | Threat Modelling Lead: STRIDE Risk Assessment & Semgrep SAST |
-| **IT24103939** | Student Member 4 | DevSecOps Engineer: Gitleaks Secrets Management & SCA Gates |
+| **IT24103936** | Sewmina G. D. D. | Lead Architect: CI/CD Pipeline & Trivy Container Gates |
+| **IT24103718** | Perera K. S. S. | Secure Coding Engineer: Exploit PoC Testing & Remediation |
+| **IT24103839** | Ambegoda L. D. S. P. | Threat Modelling Lead: STRIDE Risk Assessment & Semgrep SAST |
+| **IT24102509** | Hettiarachchi T. J. | DevSecOps Engineer: Gitleaks Secrets Management & SCA Gates |

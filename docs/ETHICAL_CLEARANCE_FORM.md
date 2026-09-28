@@ -16,10 +16,10 @@
 
 | Student ID | Full Name | Assigned Module Role | Signature |
 | :--- | :--- | :--- | :--- |
-| **IT24103936** | sewmina G D D | Lead Architect: CI/CD Pipeline & Trivy Container Gates | *Signed Electronically* |
-| **IT24103937** | Ashen Dilantha | Security Analyst & Developer: Secure Coding & SSJS/NoSQLi Fixes | *Signed Electronically* |
-| **IT24103938** | Student Member 3 | Threat Modelling Lead: STRIDE Risk Assessment & Semgrep SAST | *Signed Electronically* |
-| **IT24103939** | Student Member 4 | DevSecOps Engineer: Gitleaks Secrets Management & SCA Gates | *Signed Electronically* |
+| **IT24103936** | Sewmina G. D. D. | Lead Architect: CI/CD Pipeline & Trivy Container Gates | *Signed Electronically* |
+| **IT24103718** | Perera K. S. S. | Secure Coding Engineer: Exploit PoC Testing & Remediation | *Signed Electronically* |
+| **IT24103839** | Ambegoda L. D. S. P. | Threat Modelling Lead: STRIDE Risk Assessment & Semgrep SAST | *Signed Electronically* |
+| **IT24102509** | Hettiarachchi T. J. | DevSecOps Engineer: Gitleaks Secrets Management & SCA Gates | *Signed Electronically* |
 
 ---
 

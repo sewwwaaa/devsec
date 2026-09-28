@@ -10,10 +10,10 @@
 
 | Student ID | Full Name | Primary Project Role & Domain | Contribution |
 | :--- | :--- | :--- | :---: |
-| **IT24103936** | sewmina G D D | Lead Architect: CI/CD Pipeline & Trivy Container Gates | 25% |
-| **IT24103937** | Ashen Dilantha | Security Analyst & Developer: Secure Coding & SSJS/NoSQLi Fixes | 25% |
-| **IT24103938** | Student Member 3 | Threat Modelling Lead: STRIDE Risk Assessment & Semgrep SAST | 25% |
-| **IT24103939** | Student Member 4 | DevSecOps Engineer: Gitleaks Secrets Management & SCA Gates | 25% |
+| **IT24103936** | Sewmina G. D. D. | Lead Architect: CI/CD Pipeline & Trivy Container Gates | 25% |
+| **IT24103718** | Perera K. S. S. | Secure Coding Engineer: Exploit PoC Testing & Remediation | 25% |
+| **IT24103839** | Ambegoda L. D. S. P. | Threat Modelling Lead: STRIDE Risk Assessment & Semgrep SAST | 25% |
+| **IT24102509** | Hettiarachchi T. J. | DevSecOps Engineer: Gitleaks Secrets Management & SCA Gates | 25% |
 
 - **Courseweb Submission Link / Repository:** `https://github.com/ashendilantha/nodegoat-devsecops`
 - **Application Selected:** **OWASP NodeGoat** (Node.js / Express / MongoDB)
@@ -420,10 +420,10 @@ While our implementation successfully demonstrates an automated, secure DevSecOp
 
 | Student ID | Full Name | Specific Contributions & Assigned Sections | Contribution % |
 | :--- | :--- | :--- | :---: |
-| **IT24103936** | sewmina G D D | Pipeline Lead: Designed GitHub Actions CI/CD pipeline (`devsecops-pipeline.yml`), configured Trivy container scanning, containerised NodeGoat, authored Sections 1 & 4. | 25% |
-| **IT24103937** | Ashen Dilantha | Secure Coding Lead: Implemented and tested SSJS, NoSQLi, and XSS exploit scripts, authored secure coding patches (Commit `22574e5`), authored Section 3. | 25% |
-| **IT24103938** | Student Member 3 | Security Analyst: Formulated STRIDE threat model, evaluated 5x5 qualitative risk matrix, configured Semgrep SAST rule packs, authored Sections 2 & 6. | 25% |
-| **IT24103939** | Student Member 4 | DevSecOps Engineer: Configured Gitleaks secret scanning, established environment secrets management & Vault design, authored Sections 5, 7, & 8. | 25% |
+| **IT24103936** | Sewmina G. D. D. | Pipeline Lead: Designed GitHub Actions CI/CD pipeline (`devsecops-pipeline.yml`), configured Trivy container scanning, containerised NodeGoat, authored Sections 1 & 4. | 25% |
+| **IT24103718** | Perera K. S. S. | Secure Coding Lead: Implemented and tested SSJS, NoSQLi, and XSS exploit scripts, authored secure coding patches (Commit `22574e5`), authored Section 3. | 25% |
+| **IT24103839** | Ambegoda L. D. S. P. | Security Analyst: Formulated STRIDE threat model, evaluated 5x5 qualitative risk matrix, configured Semgrep SAST rule packs, authored Sections 2 & 6. | 25% |
+| **IT24102509** | Hettiarachchi T. J. | DevSecOps Engineer: Configured Gitleaks secret scanning, established environment secrets management & Vault design, authored Sections 5, 7, & 8. | 25% |
 
 ### 8.2 AI Usage Disclosure
 In strict adherence to the SLIIT Academic Integrity Guidelines and Section 3 of the IE3142 Assignment Specification, our group discloses that AI tools (Google Antigravity AI / Claude) were utilized as technical assistants during the project:
