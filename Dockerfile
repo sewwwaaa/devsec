@@ -1,38 +1,24 @@
-# Stage 1: Build & Dependencies
-FROM node:20-alpine AS builder
+FROM node:12-alpine
 
-WORKDIR /app
+ENV WORKDIR /usr/src/app/
+WORKDIR $WORKDIR
 
-# Install security updates
-RUN apk update && apk upgrade --no-cache
+COPY package*.json $WORKDIR
+RUN npm install --production --no-cache
 
-COPY backend/package*.json ./
-RUN npm ci --only=production
+FROM node:12-alpine
+ENV USER node
+ENV WORKDIR /home/$USER/app
 
-# Stage 2: Minimal Secure Runtime
-FROM node:20-alpine AS runner
+WORKDIR $WORKDIR
 
-# Security: Install latest patches & dumb-init for proper signal handling
-RUN apk update && apk upgrade --no-cache && apk add --no-cache dumb-init
+COPY --from=0 /usr/src/app/node_modules node_modules
+RUN chown $USER:$USER $WORKDIR
+COPY --chown=node . $WORKDIR
+# In production environment uncomment the next line
+#RUN chown -R $USER:$USER /home/$USER && chmod -R g-s,o-rx /home/$USER && chmod -R o-wrx $WORKDIR
+# Then all further actions including running the containers should be done under non-root user.
+USER $USER
+EXPOSE 4000
 
-WORKDIR /app
-
-# Ensure non-root execution (Least Privilege principle)
-USER node
-
-# Copy dependencies and application code with correct ownership
-COPY --chown=node:node --from=builder /app/node_modules ./node_modules
-COPY --chown=node:node backend/ ./
-COPY --chown=node:node frontend/ ../frontend/
-
-ENV NODE_ENV=production
-ENV PORT=5000
-
-# Container Healthcheck (Mitigates undetected failure / DoS)
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:5000/api/health || exit 1
-
-EXPOSE 5000
-
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["node", "src/server.js"]
+CMD ["npm","start"]

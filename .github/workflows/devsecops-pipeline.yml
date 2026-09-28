@@ -1,0 +1,191 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+  pull_request:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  security-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  #full history
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      #SAST
+      - name: Install Semgrep
+        run: |
+          pip install --upgrade pip
+          pip install semgrep
+
+      - name: Run Semgrep SAST Scan
+        id: semgrep
+        run: |
+          echo "Running semgrep SAST scan"
+          semgrep --config p/owasp-top-ten --config p/security-audit --config p/nodejs \
+          app/ --json --output semgrep-results.json || true
+
+          echo ""
+          echo "Semgrep Reults:"
+          if [ -f semgrep-results.json ]; then
+            jq '.results | length' semgrep-results.json
+            jq '.results[] | select(.extra.severity == "ERROR") | .message' semgrep-results.json || echo "No critical errors"
+          fi
+
+      - name: Check Semgrep Results
+        run: |
+          if [ ! -f semgrep-results.json ]; then
+            echo "No security issues found"
+            exit 0
+          fi
+
+          CRITICAL=$(jq '[.results[] | select(.extra.severity == "ERROR")] | length' semgrep-results.json)
+          TOTAL=$(jq '.results | length' semgrep-results.json)
+
+          echo ""
+          echo "==SAST GAte Results=="
+          echo "Total findings: $TOTAL"
+          echo "Critical (ERROR) findings: $CRITICAL"
+          echo ""
+
+          if [ $CRITICAL -gt 10 ]; then
+            echo "SAST gate FAILED: Too many critical findings ($CRITICAL > 10)"
+            exit 1
+          fi
+
+          echo "SAST gate PASSED"
+
+      - name: Upload Semgrep Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-results
+          path: semgrep-results.json
+
+      # #dependency scaning
+      # - name: Run npm Audit
+      #   id: npm_audit
+      #   run: |
+      #     echo "Running npm audit"
+      #     npm install
+      #     npm audit --json > npm-audit-results.json || true
+
+      # - name: Check npm Audit Results
+      #   run: |
+      #     if [ ! -f npm-audit-results.json ]; then
+      #       echo "No vulnerable dependencies"
+      #       exit 0
+      #     fi
+
+      #     CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' npm-audit-results.json)
+      #     HIGH=$(jq '.metadata.vulnerabilities.high // 0' npm-audit-results.json)
+      #     TOTAL=$(jq '.metadata.vulnerabilities.total // 0' npm-audit-results.json)
+
+      #     echo ""
+      #     echo "==Dependency Scan Results=="
+      #     echo "Total vulnerabilities: $TOTAL"
+      #     echo "Critical: $CRITICAL"
+      #     echo "High: $HIGH"
+
+      #     if [ $CRITICAL -gt 0 ]; then
+      #       echo "Dependency gate FAILED: Critical vulnerabilities found"
+      #       exit 1
+      #     fi
+
+      #     if [ $HIGH -gt 5 ]; then
+      #       echo "Warning: $HIGH high vulnerabilities (threshold: 5)"
+      #     fi
+
+      #     echo "Dependency gate PASSED"
+
+      # - name: Upload npm Audit Results
+      #   uses: actions/upload-artifact@v4
+      #   if: always()
+      #   with:
+      #     name: npm-audit-results
+      #     path: npm-audit-results.json
+
+
+
+        #Secrets scaning
+      - name: Run Gitleaks Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_SUMMARY: "true"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "true"
+          #GITLEAKS_NOTIFY_USER_LIST: "false"
+
+      #container image scaning
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build docker image
+        run: |
+          echo "Building docker image"
+          docker build -t nodegoat:latest .
+          docker tag nodegoat:latest nodegoat:${{ github.sha }}
+          echo "Docker image built successfully"
+
+      - name: Run Trivy Scan
+        #uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.24.0
+        with:
+          scan-type: image
+          image-ref: nodegoat:latest
+          format: json
+          output: trivy-results.json
+          severity: HIGH,CRITICAL
+          exit-code: '0'
+
+      - name: Upload Trivy Report
+        if: ${{ always() && hashFiles('trivy-results.json') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results
+          path: trivy-results.json
+          if-no-files-found: ignore
+
+      
+
+      #pipeline summery
+      - name: Pipeline Summary
+        if: always()
+        run: |
+          echo ""
+          echo "== Pipeline Summary =="
+          echo ""
+          echo "1. SAST"
+          echo "2. Dependency scannning"
+          echo "3. Secrets scaninng"
+          echo "4. Container scanning"
+          echo ""
+          echo "Results in Artifacts section"
+
+      - name: Notify Success
+        if: success()
+        run: |
+          echo ""
+          echo "BUILD OK"
+          echo ""
+
+      - name: Notify Failure
+        if: failure()
+        run: |
+          echo ""
+          echo "BUILD BLOCKED"
+          echo ""
+          exit 1
