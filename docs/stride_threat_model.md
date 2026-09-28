@@ -2,7 +2,7 @@
 **Module:** IE3142 - DevOps Security  
 **Project:** OWASP NodeGoat DevSecOps Platform  
 **Target Architecture:** Multi-Component Containerised Web Application & MongoDB Database (Appendix A.1)  
-**Repository:** `https://github.com/ashendilantha/nodegoat-devsecops`
+**Repository:** `https://github.com/sewwwaaa/devsec`
 
 ---
 

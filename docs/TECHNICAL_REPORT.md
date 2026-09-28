@@ -15,7 +15,7 @@
 | **IT24103839** | Ambegoda L. D. S. P. | Threat Modelling Lead: STRIDE Risk Assessment & Semgrep SAST | 25% |
 | **IT24102509** | Hettiarachchi T. J. | DevSecOps Engineer: Gitleaks Secrets Management & SCA Gates | 25% |
 
-- **Courseweb Submission Link / Repository:** `https://github.com/ashendilantha/nodegoat-devsecops`
+- **Courseweb Submission Link / Repository:** `https://github.com/sewwwaaa/devsec`
 - **Application Selected:** **OWASP NodeGoat** (Node.js / Express / MongoDB)
 - **Selection Category:** **Appendix A.1: Intentionally Vulnerable Applications (Recommended)**
 - **Target Submission Date:** 1st October 2026

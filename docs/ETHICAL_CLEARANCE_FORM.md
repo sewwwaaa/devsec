@@ -10,7 +10,7 @@
 
 - **Project Title:** OWASP NodeGoat — DevSecOps Pipeline & Vulnerability Remediation Platform
 - **Application Selected:** **OWASP NodeGoat** (Node.js / Express / MongoDB) — Pre-vetted under **Appendix A.1 (Intentionally Vulnerable Applications)**
-- **Repository URL:** `https://github.com/ashendilantha/nodegoat-devsecops`
+- **Repository URL:** `https://github.com/sewwwaaa/devsec`
 
 ### Group Member Particulars
 

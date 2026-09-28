@@ -2,7 +2,7 @@
 > **IE3142: DevOps Security — Year 3 Semester 1, 2026**  
 > **Faculty of Computing, Sri Lanka Institute of Information Technology (SLIIT)**
 
-[![CI/CD DevSecOps Pipeline](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue.svg)](https://github.com/ashendilantha/nodegoat-devsecops/actions)
+[![CI/CD DevSecOps Pipeline](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue.svg)](https://github.com/sewwwaaa/devsec/actions)
 [![SAST Semgrep](https://img.shields.io/badge/SAST-Semgrep%20Passed-success.svg)](https://semgrep.dev)
 [![SCA npm audit](https://img.shields.io/badge/SCA-npm%20audit%20Passed-success.svg)](package.json)
 [![Secrets Gitleaks](https://img.shields.io/badge/Secrets-Gitleaks%20Active-brightgreen.svg)](https://github.com/gitleaks/gitleaks)
@@ -13,7 +13,7 @@
 ## 📌 Project Overview
 This repository contains the complete DevSecOps pipeline implementation, threat model, exploit demonstrations, and secure coding fixes for **OWASP NodeGoat**, pre-vetted and recommended under **Appendix A.1 (Intentionally Vulnerable Applications)** of the **IE3142 DevOps Security module brief**.
 
-- **Repository:** [https://github.com/ashendilantha/nodegoat-devsecops](https://github.com/ashendilantha/nodegoat-devsecops)
+- **Repository:** [https://github.com/sewwwaaa/devsec](https://github.com/sewwwaaa/devsec)
 - **Selected Stack:** Node.js (Express.js) Web Tier + MongoDB 4.4 NoSQL Database Tier
 - **Orchestration:** Multi-container Docker Compose (`web` + `db`)
 - **Offline Capable:** 100% executable and testable on local developer workstations without cloud accounts.
@@ -66,8 +66,8 @@ The GitHub Actions workflow (`.github/workflows/devsecops-pipeline.yml`) enforce
 ### Using Docker Compose (Recommended)
 ```bash
 # 1. Clone the repository
-git clone https://github.com/ashendilantha/nodegoat-devsecops.git
-cd nodegoat-devsecops
+git clone https://github.com/sewwwaaa/devsec.git
+cd devsec
 
 # 2. Build and start containers
 docker compose up --build

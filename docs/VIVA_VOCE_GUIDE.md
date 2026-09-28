@@ -1,7 +1,7 @@
 # IE3142: DevOps Security — Viva Voce Preparation Guide (25 Marks)
 **Academic Year:** 2026 | **Year 3 Semester 1** | **Faculty of Computing, SLIIT**  
 **Project:** OWASP NodeGoat DevSecOps Platform (Appendix A.1)  
-**Repository:** `https://github.com/ashendilantha/nodegoat-devsecops`  
+**Repository:** `https://github.com/sewwwaaa/devsec`  
 
 This preparation manual is structured directly around the **Viva Voce Assessment Rubric (Pages 10–11 of the Assignment Specification)**. Every team member must master these core questions and scenario defenses.
 
