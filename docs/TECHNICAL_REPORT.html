@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IE3142 DevSecOps Technical Report - TaskShield</title>
+  <title>IE3142 DevSecOps Technical Report - OWASP NodeGoat</title>
   <style>
     :root {
       --primary: #1e3a8a;
@@ -12,6 +12,9 @@
       --text: #1f2937;
       --border: #e2e8f0;
       --bg-code: #f8fafc;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --warning: #d97706;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -22,7 +25,7 @@
       padding: 2rem 1rem;
     }
     .report-container {
-      max-width: 900px;
+      max-width: 960px;
       margin: 0 auto;
       background: #ffffff;
       padding: 3rem 4rem;
@@ -46,39 +49,39 @@
       margin-bottom: 0.75rem;
     }
     .header-meta {
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       color: #475569;
+      line-height: 1.5;
     }
     h2 {
       color: var(--secondary);
       font-size: 1.4rem;
-      margin-top: 2rem;
-      margin-bottom: 0.75rem;
+      margin-top: 2.2rem;
+      margin-bottom: 0.85rem;
       border-bottom: 1px solid var(--border);
       padding-bottom: 0.3rem;
     }
     h3 {
-      color: #334155;
+      color: #1e293b;
       font-size: 1.15rem;
-      margin-top: 1.25rem;
+      margin-top: 1.5rem;
       margin-bottom: 0.5rem;
     }
     h4 {
-      color: #475569;
+      color: #334155;
       font-size: 1rem;
       margin-top: 1rem;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.4rem;
     }
-    p {
+    p, ul, ol {
       margin-bottom: 1rem;
-      text-align: justify;
+      font-size: 0.95rem;
     }
     ul, ol {
-      margin-left: 1.5rem;
-      margin-bottom: 1rem;
+      padding-left: 1.5rem;
     }
     li {
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.4rem;
     }
     table {
       width: 100%;
@@ -88,96 +91,95 @@
     }
     th, td {
       border: 1px solid var(--border);
-      padding: 8px 12px;
+      padding: 0.65rem 0.85rem;
       text-align: left;
+      vertical-align: top;
     }
     th {
-      background: #f8fafc;
+      background-color: #f8fafc;
       color: var(--secondary);
       font-weight: 600;
     }
     tr:nth-child(even) {
-      background: #fafafa;
+      background-color: #fcfdfe;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85em;
+      background-color: var(--bg-code);
+      padding: 0.15em 0.35em;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      color: #b91c1c;
     }
     pre {
-      background: var(--bg-code);
+      background-color: var(--bg-code);
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 1rem;
       overflow-x: auto;
-      font-family: Consolas, Monaco, monospace;
-      font-size: 0.85rem;
       margin: 1rem 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85rem;
       line-height: 1.45;
-    }
-    code {
-      font-family: Consolas, Monaco, monospace;
-      background: #f1f5f9;
-      padding: 2px 5px;
-      border-radius: 4px;
-      font-size: 0.88rem;
-      color: #be123c;
     }
     pre code {
       background: none;
+      border: none;
       padding: 0;
       color: #1e293b;
     }
     .badge {
       display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
+      padding: 0.2em 0.55em;
       font-size: 0.75rem;
       font-weight: 600;
+      border-radius: 4px;
     }
-    .badge-critical { background: #fee2e2; color: #dc2626; }
-    .badge-high { background: #ffedd5; color: #ea580c; }
-    .badge-medium { background: #e0f2fe; color: #0284c7; }
-    .btn-print {
-      display: inline-block;
-      margin-bottom: 1.5rem;
-      padding: 8px 16px;
-      background: var(--primary);
-      color: #fff;
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      border: none;
+    .badge-critical { background: #fee2e2; color: #991b1b; }
+    .badge-high { background: #ffedd5; color: #9a3412; }
+    .badge-medium { background: #fef3c7; color: #92400e; }
+    .badge-low { background: #dcfce7; color: #166534; }
+    .callout {
+      background: #eff6ff;
+      border-left: 4px solid var(--accent);
+      padding: 1rem;
+      margin: 1.25rem 0;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.92rem;
     }
-    .btn-print:hover { background: var(--accent); }
+    .diff-del { background-color: #ffeef0; color: #b31d28; display: block; }
+    .diff-add { background-color: #e6ffed; color: #22863a; display: block; }
     @media print {
       body { background: #fff; padding: 0; }
       .report-container { box-shadow: none; padding: 0; max-width: 100%; }
-      .btn-print { display: none; }
-      h2 { page-break-after: avoid; }
-      table, pre { page-break-inside: avoid; }
+      h2 { page-break-before: always; }
+      h2:first-of-type { page-break-before: avoid; }
+      pre, table { page-break-inside: avoid; }
     }
   </style>
 </head>
 <body>
-
   <div class="report-container">
-    <button class="btn-print" onclick="window.print()">🖨️ Print / Save as PDF (Courseweb Submission)</button>
-
-    <div class="header-banner">
+    <header class="header-banner">
       <h1>BUILDING AND SECURING A DEVSECOPS PIPELINE</h1>
       <h2>IE3142 — DevOps Security | Technical Report</h2>
       <div class="header-meta">
         <strong>Faculty of Computing, Sri Lanka Institute of Information Technology (SLIIT)</strong><br>
-        BSc (Hons) in Information Technology &bull; Year 3 Semester 1, 2026<br>
-        <strong>Repository URL:</strong> https://github.com/sliit-devsecops-2026/devsecops-pipeline-taskshield
+        BSc (Hons) in Information Technology — Year 3 Semester 1, 2026<br>
+        <strong>Selected Application:</strong> OWASP NodeGoat (Appendix A.1 Intentionally Vulnerable Application)<br>
+        <strong>Repository URL:</strong> <a href="https://github.com/ashendilantha/nodegoat-devsecops" target="_blank">https://github.com/ashendilantha/nodegoat-devsecops</a><br>
+        <strong>Submission Deadline:</strong> 1st October 2026
       </div>
-    </div>
+    </header>
 
-    <h3>Group Identification & Metadata</h3>
+    <h3>Group Particulars & Metadata</h3>
     <table>
       <thead>
         <tr>
           <th>Student ID</th>
           <th>Full Name</th>
-          <th>Assigned Module Role & Responsibilities</th>
+          <th>Primary Project Role & Domain</th>
           <th>Contribution</th>
         </tr>
       </thead>
@@ -185,77 +187,82 @@
         <tr>
           <td><strong>IT24103936</strong></td>
           <td>sewmina G D D</td>
-          <td>Lead Architect: CI/CD Pipeline, Trivy Container Gates, GitHub Actions</td>
+          <td>Lead Architect: CI/CD Pipeline & Trivy Container Gates</td>
           <td>25%</td>
         </tr>
         <tr>
           <td><strong>IT24103937</strong></td>
-          <td>Student Member 2</td>
-          <td>Security Analyst: STRIDE Threat Modelling, 5x5 Risk Matrix, Semgrep SAST</td>
+          <td>Ashen Dilantha</td>
+          <td>Security Analyst & Developer: Secure Coding & SSJS/NoSQLi Fixes</td>
           <td>25%</td>
         </tr>
         <tr>
           <td><strong>IT24103938</strong></td>
           <td>Student Member 3</td>
-          <td>Secure Coding Engineer: Exploit PoC Scripts, Secure Code Remediation</td>
+          <td>Threat Modelling Lead: STRIDE Risk Assessment & Semgrep SAST</td>
           <td>25%</td>
         </tr>
         <tr>
           <td><strong>IT24103939</strong></td>
           <td>Student Member 4</td>
-          <td>DevSecOps Engineer: Secrets Management, Vault Integration, Gitleaks & SCA</td>
+          <td>DevSecOps Engineer: Gitleaks Secrets Management & SCA Gates</td>
           <td>25%</td>
         </tr>
       </tbody>
     </table>
 
     <h2>1. Executive Summary & System Overview</h2>
+    
+    <h3>1.1 Selected Application & Rationale (Appendix A.1 Compliance)</h3>
     <p>
-      Modern software development demands a fundamental paradigm shift from legacy "perimeter-only" security towards an automated, continuous DevSecOps pipeline where security practices are embedded throughout every phase of the Software Development Life Cycle (SDLC). To operationalize these concepts without reliance on commercial cloud subscriptions or complex Kubernetes clusters, our group selected and engineered <strong>TaskShield</strong>, a multi-component open-source task and note management platform designed around the Node.js/Express and REST architectural style, fully conforming to the criteria in Appendix A of the IE3142 module brief.
+      Modern software development demands a fundamental paradigm shift from legacy "perimeter-only" security towards an automated, continuous DevSecOps pipeline where security practices are embedded throughout every phase of the Software Development Life Cycle (SDLC). To operationalise these concepts without reliance on commercial cloud subscriptions or complex Kubernetes clusters, our group selected <strong>OWASP NodeGoat</strong>, pre-vetted and recommended under <strong>Appendix A.1 (Intentionally Vulnerable Applications)</strong> of the IE3142 module brief.
     </p>
     <p>
-      TaskShield satisfies all foundational requirements:
+      As noted in the assignment brief, selecting an approved intentionally vulnerable application allows groups to focus limited time on the pipeline and remediation work rather than on vulnerability discovery; the flaws are documented, realistic, and mapped to known CWE/OWASP categories, which makes the Section 2.3 exploit-and-fix requirement far more predictable to plan and demonstrate.
     </p>
-    <ul>
-      <li><strong>Componentry:</strong> It features two distinctly separated communicating components—a modern browser-facing single-page application (SPA) presentation tier and an asynchronous REST API backend microservice communicating over HTTP/JSON.</li>
-      <li><strong>Containerisation:</strong> Each tier contains dedicated Dockerfiles, accompanied by a root <code>docker-compose.yml</code> orchestrating the multi-container topology.</li>
-      <li><strong>Offline Capability:</strong> The system runs completely offline on a standard local workstation using SQLite persistent volume storage, requiring zero external internet or paid software licenses.</li>
-      <li><strong>Vulnerability Analysis:</strong> Rather than treating security as an afterthought checklist, TaskShield implements deliberately isolated vulnerable proof-of-concept pathways alongside production-grade secure coding remediations, providing verifiable evidence of exploit execution, automated detection, and successful mitigation.</li>
-    </ul>
+    <div class="callout">
+      <strong>Core Constraints Verification:</strong>
+      <ul>
+        <li><strong>Communicating Components:</strong> Distinct web presentation/API tier (Node.js/Express) communicating over TCP with a MongoDB document database.</li>
+        <li><strong>Containerisation:</strong> Fully containerised with a dedicated Dockerfile and multi-container <code>docker-compose.yml</code> orchestration.</li>
+        <li><strong>Offline Capability:</strong> Operates 100% offline on local developer workstations without cloud dependencies.</li>
+        <li><strong>Authentic Vulnerability Demonstrations:</strong> Native OWASP Top 10 vulnerabilities (SSJS, NoSQL Injection, Stored XSS, Broken Auth) verified via exploits, SAST, and permanent code fixes.</li>
+      </ul>
+    </div>
 
     <h3>1.2 Technology Stack</h3>
     <ul>
-      <li><strong>Presentation Layer:</strong> HTML5, CSS3, and modern Vanilla JavaScript (ES6+), served via a hardened Nginx 1.27 Alpine reverse-proxy container.</li>
-      <li><strong>Application Layer:</strong> Node.js runtime (v20 LTS) with Express.js microservice architecture, utilizing Helmet for HTTP security header injection, Joi for strict input validation, Bcrypt.js for salt-and-hash password storage, and JSON Web Tokens (<code>jsonwebtoken</code>) for stateless Bearer authentication.</li>
-      <li><strong>Data Layer:</strong> SQLite embedded database engine with write-ahead logging (WAL), structured with dedicated tables for user identity, tenant-isolated notes, and an immutable security audit trail.</li>
-      <li><strong>DevSecOps Toolchain:</strong> Semgrep (SAST), npm audit & Trivy (SCA/Filesystem), Gitleaks (Secret Detection), Trivy (Container Scanning), OWASP ZAP (DAST), and HashiCorp Vault (Dynamic Secrets Management).</li>
+      <li><strong>Web Tier:</strong> Node.js runtime, Express.js web framework, Swig/HTML server-side templating, session cookies.</li>
+      <li><strong>Database Tier:</strong> MongoDB 4.4 NoSQL document store with collections for <code>users</code>, <code>allocations</code>, <code>memos</code>, and <code>counters</code>.</li>
+      <li><strong>Security Automation Toolchain:</strong>
+        <ul>
+          <li><strong>SAST:</strong> Semgrep CLI (<code>p/owasp-top-ten</code>, <code>p/nodejs</code>, <code>p/security-audit</code>).</li>
+          <li><strong>SCA:</strong> <code>npm audit</code> dependency scanning.</li>
+          <li><strong>Secrets Scanning:</strong> Gitleaks Action v2.</li>
+          <li><strong>Container Image Scanning:</strong> Aqua Security Trivy Action (<code>v0.24.0</code>).</li>
+        </ul>
+      </li>
     </ul>
 
     <h3>1.3 System Architecture & Trust Boundaries</h3>
-    <p>
-      TaskShield implements defense-in-depth across four distinct trust boundaries:
-    </p>
     <ul>
-      <li><strong>Trust Boundary 1 (Public Internet to DMZ):</strong> Separates untrusted public clients and adversaries from the network perimeter. All inbound requests are treated as hostile until validated.</li>
-      <li><strong>Trust Boundary 2 (DMZ / Perimeter Tier):</strong> Nginx serves as the reverse proxy on host port <code>8080</code>. It terminates external traffic, enforces Content-Security-Policy (CSP) and anti-clickjacking headers, and forwards sanitized calls to the internal application network.</li>
-      <li><strong>Trust Boundary 3 (Application Tier):</strong> The Node.js Express backend runs on port <code>5000</code> within an internal isolated Docker bridge network (<code>app-network</code>). It enforces strict Joi input validation, rate limiting, role-based access control (RBAC), and tenant ownership authorization before routing to business logic.</li>
-      <li><strong>Trust Boundary 4 (Data & Secrets Persistence):</strong> The database and secret stores are isolated from direct external access. Secrets are injected at runtime directly into process memory via environment variables or HashiCorp Vault, ensuring zero plaintext secrets reside on disk or within git history.</li>
+      <li><strong>Trust Boundary 1 (Public Client to Ingress):</strong> Ingress on port <code>4000</code> exposed to public browser traffic and external adversaries.</li>
+      <li><strong>Trust Boundary 2 (Express Web Application Container):</strong> Session validation, routing to controllers (<code>contributions.js</code>, <code>allocations.js</code>, <code>memos.js</code>, <code>profile.js</code>), and view rendering.</li>
+      <li><strong>Trust Boundary 3 (Application-to-Database Boundary):</strong> Isolated bridge network (<code>nodegoat-net</code>) connecting Express to MongoDB on port <code>27017</code> via Data Access Objects.</li>
+      <li><strong>Trust Boundary 4 (Secrets & Configuration Boundary):</strong> Sensitive keys injected via environment variables and GitHub Actions encrypted secrets; zero hardcoded secrets in git.</li>
     </ul>
 
     <h2>2. Threat Modelling & Risk Assessment (LO2)</h2>
-    <p>
-      Prior to implementing pipeline automation, our team conducted a structured threat model using the Microsoft <strong>STRIDE</strong> methodology against the system architecture diagram and data flows.
-    </p>
-
-    <h3>Table 1: STRIDE Threat Assessment & 5x5 Qualitative Risk Matrix</h3>
+    
+    <h3>2.1 STRIDE Threat Analysis</h3>
     <table>
       <thead>
         <tr>
-          <th>ID</th>
-          <th>STRIDE</th>
-          <th>Specific Threat Scenario</th>
-          <th>Likelihood (1-5)</th>
-          <th>Impact (1-5)</th>
+          <th>Threat ID</th>
+          <th>STRIDE Category</th>
+          <th>Specific Attack Scenario</th>
+          <th>Likelihood</th>
+          <th>Impact</th>
           <th>Score</th>
           <th>Severity</th>
           <th>Rating Justification</th>
@@ -265,72 +272,72 @@
         <tr>
           <td><strong>TH-01</strong></td>
           <td>Spoofing</td>
-          <td>Forged JWT Admin Tokens via Weak Secret</td>
+          <td>Broken Authentication & Plaintext Passwords</td>
           <td>3</td>
           <td>5</td>
-          <td>15</td>
+          <td><strong>15</strong></td>
           <td><span class="badge badge-high">High</span></td>
-          <td>Offline brute-forcing tools crack weak keys rapidly, yielding total administrative control.</td>
+          <td>Database leakage directly exposes plain credentials, enabling total account takeover.</td>
         </tr>
         <tr>
           <td><strong>TH-02</strong></td>
           <td>Tampering</td>
-          <td>Stored XSS Scripting via Task Inputs</td>
+          <td>SSJS Remote Code Execution via <code>eval()</code></td>
           <td>4</td>
-          <td>4</td>
-          <td>16</td>
-          <td><span class="badge badge-high">High</span></td>
-          <td>Note-taking UIs rendering unsanitized text are prime XSS targets; payload enables session hijacking.</td>
+          <td>5</td>
+          <td><strong>20</strong></td>
+          <td><span class="badge badge-critical">Critical</span></td>
+          <td><code>eval()</code> runs in process context; payload yields shell execution and total server compromise.</td>
         </tr>
         <tr>
           <td><strong>TH-03</strong></td>
           <td>Repudiation</td>
-          <td>Unlogged Administrative Actions</td>
+          <td>Unlogged Allocation & Profile Modifications</td>
           <td>2</td>
           <td>4</td>
-          <td>8</td>
+          <td><strong>8</strong></td>
           <td><span class="badge badge-medium">Medium</span></td>
-          <td>Does not leak data directly, but cripples incident response, compliance audits, and attribution.</td>
+          <td>Lacks audit trail for forensic attribution and regulatory compliance.</td>
         </tr>
         <tr>
           <td><strong>TH-04</strong></td>
           <td>Info Disclosure</td>
-          <td>SQL Injection Auth Bypass & Data Dump</td>
+          <td>NoSQL Injection via MongoDB <code>$where</code></td>
           <td>4</td>
-          <td>5</td>
-          <td>20</td>
-          <td><span class="badge badge-critical">Critical</span></td>
-          <td>Readily automated via scanner scripts; causes total compromise of database confidentiality.</td>
+          <td>4</td>
+          <td><strong>16</strong></td>
+          <td><span class="badge badge-high">High</span></td>
+          <td>Tautology payloads (<code>return 1 == '1'</code>) dump complete employee portfolio records.</td>
         </tr>
         <tr>
           <td><strong>TH-05</strong></td>
-          <td>DoS</td>
-          <td>High-Frequency Auth Brute-Force Flooding</td>
-          <td>4</td>
+          <td>Denial of Service</td>
+          <td>ReDoS Backtracking in Routing Number</td>
           <td>3</td>
-          <td>12</td>
+          <td>4</td>
+          <td><strong>12</strong></td>
           <td><span class="badge badge-high">High</span></td>
-          <td>Unprotected endpoints are trivial to exhaust with curl loops, degrading system responsiveness.</td>
+          <td>Exponential backtracking freezes the single-threaded Node.js event loop completely.</td>
         </tr>
         <tr>
           <td><strong>TH-06</strong></td>
           <td>Elevation of Priv</td>
-          <td>BOLA / IDOR Cross-Tenant Record Access</td>
+          <td>IDOR Cross-User Portfolio Access</td>
           <td>4</td>
           <td>4</td>
-          <td>16</td>
+          <td><strong>16</strong></td>
           <td><span class="badge badge-high">High</span></td>
-          <td>Sequential resource IDs are easily guessed; missing owner validation breaches multi-tenant isolation.</td>
+          <td>Manipulating URL path parameters (<code>:userId</code>) leaks other users' financial data.</td>
         </tr>
       </tbody>
     </table>
 
-    <h3>Table 2: Threat Mitigation & Control Traceability Mapping</h3>
+    <h3>2.2 Threat-to-Control Traceability</h3>
     <table>
       <thead>
         <tr>
           <th>Threat ID</th>
-          <th>Security Control Implemented</th>
+          <th>Mitigating Security Control</th>
           <th>Control Type</th>
           <th>Codebase / Pipeline Location</th>
           <th>Verification Mechanism</th>
@@ -339,223 +346,176 @@
       <tbody>
         <tr>
           <td><strong>TH-01</strong></td>
-          <td>Dynamic 256-bit secret from Vault; strict HS256 verification; zero hardcoding.</td>
+          <td>Bcrypt salted hashing (10 rounds); session secret externalized to env.</td>
           <td>Preventative</td>
-          <td><code>backend/src/config/secrets.js</code></td>
-          <td>Exploit 4 PoC (<code>exploit_4_weak_jwt.js</code>); Gitleaks CI Gate.</td>
+          <td><code>app/data/user-dao.js</code></td>
+          <td>Database query confirms salted hash; Gitleaks scan passes.</td>
         </tr>
         <tr>
           <td><strong>TH-02</strong></td>
-          <td>Strict HTML sanitization via <code>sanitize-html</code>; Content-Security-Policy (CSP) via Helmet.</td>
+          <td>Removed <code>eval()</code>; enforced <code>parseInt(..., 10)</code>.</td>
           <td>Preventative</td>
-          <td><code>backend/src/controllers/noteController.js</code></td>
-          <td>Exploit 2 PoC (<code>exploit_2_stored_xss.js</code>); Semgrep XSS rules.</td>
+          <td><code>app/routes/contributions.js</code> (Commit <code>22574e5</code>)</td>
+          <td>Exploit re-attempt blocked; Semgrep SAST <code>eval</code> rule cleared.</td>
         </tr>
         <tr>
           <td><strong>TH-03</strong></td>
-          <td>Persistent SQLite <code>audit_logs</code> table tracking user ID, IP address, action, and timestamp.</td>
+          <td>Persistent audit logs capturing user ID, timestamp, and actions.</td>
           <td>Detective</td>
-          <td><code>backend/src/config/db.js</code></td>
-          <td>Admin SIEM UI; Security unit tests (<code>security.test.js</code>).</td>
+          <td><code>app/data/allocations-dao.js</code></td>
+          <td>Forensic query verification in MongoDB audit collection.</td>
         </tr>
         <tr>
           <td><strong>TH-04</strong></td>
-          <td>Parameterized SQL query placeholders (<code>?</code>); strict Joi alphanumeric input validation.</td>
+          <td>Replaced <code>$where</code> JS concatenation with native MongoDB <code>{$gt}</code>.</td>
           <td>Preventative</td>
-          <td><code>backend/src/controllers/authController.js</code></td>
-          <td>Exploit 1 PoC (<code>exploit_1_injection.js</code>); Semgrep SQLi rules.</td>
+          <td><code>app/data/allocations-dao.js</code></td>
+          <td>Exploit re-attempt blocked; Semgrep NoSQLi rule passes clean.</td>
         </tr>
         <tr>
           <td><strong>TH-05</strong></td>
-          <td><code>express-rate-limit</code> windowing (20 req/15min auth; 120 req/min API); 50kb body limit.</td>
+          <td>Refactored regex to non-greedy pattern without catastrophic backtracking.</td>
           <td>Preventative</td>
-          <td><code>backend/src/middleware/rateLimiter.js</code></td>
-          <td>Rapid-fire curl testing; integration tests.</td>
+          <td><code>app/routes/profile.js</code></td>
+          <td>Payload stress test completes in &lt;5ms.</td>
         </tr>
         <tr>
           <td><strong>TH-06</strong></td>
-          <td>Explicit tenant ownership check: <code>note.userId === req.user.id || role === 'admin'</code>.</td>
+          <td>Derived user identity strictly from session (<code>req.session.userId</code>).</td>
           <td>Preventative</td>
-          <td><code>backend/src/controllers/noteController.js</code></td>
-          <td>Exploit 3 PoC (<code>exploit_3_bola_idor.js</code>); Multi-tenant unit tests.</td>
+          <td><code>app/routes/allocations.js</code></td>
+          <td>URL parameter tampering fails to access cross-user data.</td>
         </tr>
       </tbody>
     </table>
 
     <h2>3. Secure Coding: Exploit-and-Fix Walkthrough (LO2)</h2>
-    <p>
-      This section documents the core technical requirement: demonstrating working exploits against unmodified endpoints, implementing secure code remediations, and proving that the exact same exploit payload is definitively blocked.
-    </p>
 
-    <h3>3.1 Vulnerability 1: SQL Injection Authentication Bypass (CWE-89)</h3>
-    <p><strong>Unmodified Flaw:</strong> Direct string interpolation in <code>authController.vulnerableLogin</code>:</p>
-    <pre><code>const rawQuery = `SELECT * FROM users WHERE username = '${username}'`;</code></pre>
-    <p><strong>Exploit Demonstration:</strong> Payload <code>{"username": "admin' OR '1'='1", "password": "x"}</code> sent to <code>POST /api/auth/vulnerable-login</code> bypasses password verification and returns HTTP 200 with an admin JWT token.</p>
-    <p><strong>Secure Coding Fix:</strong> Parameterized query binding and Joi alphanumeric validation in <code>authController.login</code>:</p>
-    <pre><code>db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => { ... });</code></pre>
-    <p><strong>Verification:</strong> Re-running the payload against <code>POST /api/auth/login</code> returns HTTP 400 Bad Request (Validation failed), completely blocking the attack.</p>
+    <h3>3.1 Vulnerability 1: Server-Side JavaScript (SSJS) Injection in Contributions</h3>
+    <p><strong>CWE Mapping:</strong> CWE-94 / CWE-95 — OWASP Top 10 A1: Injection.</p>
+    <p><strong>Root Cause:</strong> User inputs in <code>app/routes/contributions.js</code> were parsed via <code>eval()</code>:</p>
+    <pre><code>// Insecure evaluation
+const preTax = eval(req.body.preTax);</code></pre>
+    <p><strong>Exploit Demonstration:</strong> Intercepted POST to <code>/contributions</code> with payload:</p>
+    <pre><code>preTax=10; res.end(require('child_process').execSync('whoami').toString())&afterTax=5&roth=5</code></pre>
+    <p>The server executed the command and streamed the server's OS username back in the HTTP response, proving Remote Code Execution (RCE).</p>
+    <p><strong>Secure Coding Fix (Commit <code>22574e5</code>):</strong></p>
+    <pre><code><span class="diff-del">- const preTax = eval(req.body.preTax);</span>
+<span class="diff-add">+ const preTax = parseInt(req.body.preTax, 10);</span></code></pre>
+    <p><strong>Re-attempt & SAST Result:</strong> Payload returns inert integer <code>10</code>. Semgrep finding <code>eval-with-expression</code> resolved from 1 finding to 0 findings.</p>
 
-    <h3>3.2 Vulnerability 2: Stored Cross-Site Scripting (XSS) (CWE-79)</h3>
-    <p><strong>Unmodified Flaw:</strong> Storing raw unescaped HTML in <code>noteController.vulnerableCreateNote</code>.</p>
-    <p><strong>Exploit Demonstration:</strong> Payload containing <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> and <code>&lt;img src=x onerror=...&gt;</code> is persisted in the database with status HTTP 201.</p>
-    <p><strong>Secure Coding Fix:</strong> Integrated <code>sanitize-html</code> in <code>noteController.createNote</code> with strict tag whitelist and Helmet CSP headers.</p>
-    <p><strong>Verification:</strong> Re-running the payload against <code>POST /api/notes</code> strips all dangerous script tags and event handlers, storing clean text.</p>
+    <h3>3.2 Vulnerability 2: NoSQL Injection in Allocations</h3>
+    <p><strong>CWE Mapping:</strong> CWE-943 — OWASP Top 10 A1: Injection.</p>
+    <p><strong>Root Cause:</strong> Concatenation into a MongoDB <code>$where</code> clause in <code>app/data/allocations-dao.js</code>.</p>
+    <p><strong>Exploit Demonstration:</strong> Sent <code>GET /allocations/2?threshold=1';+return+1=='1</code>, forcing <code>$where</code> to evaluate to <code>true</code> for all documents, leaking all employee retirement portfolios.</p>
+    <p><strong>Secure Coding Fix:</strong> Replaced dynamic <code>$where</code> evaluation with native parameterized MongoDB operators: <code>{ userId: parsedUserId, stocks: { $gt: parsedThreshold } }</code>.</p>
+    <p><strong>Re-attempt & SAST Result:</strong> Payload causes invalid threshold error. Semgrep NoSQL injection findings reduced to 0.</p>
 
-    <h3>3.3 Vulnerability 3: Broken Object Level Authorization / IDOR (CWE-639)</h3>
-    <p><strong>Unmodified Flaw:</strong> Querying notes by ID in <code>noteController.vulnerableGetNoteById</code> without checking caller identity.</p>
-    <p><strong>Exploit Demonstration:</strong> User Bob (ID: 3) accesses <code>GET /api/notes/demo/bola/1</code> and exfiltrates Alice's confidential budget record (HTTP 200).</p>
-    <p><strong>Secure Coding Fix:</strong> Ownership verification guard in <code>noteController.getNoteById</code>:</p>
-    <pre><code>if (note.userId !== req.user.id && req.user.role !== 'admin') { return res.status(403).json(...); }</code></pre>
-    <p><strong>Verification:</strong> Bob repeats the request against <code>GET /api/notes/1</code> and is blocked with HTTP 403 Forbidden, triggering an entry in <code>audit_logs</code>.</p>
+    <h3>3.3 Vulnerability 3: Stored Cross-Site Scripting (XSS) in Memos</h3>
+    <p><strong>CWE Mapping:</strong> CWE-79 — OWASP Top 10 A7: Cross-Site Scripting.</p>
+    <p><strong>Root Cause:</strong> In <code>app/views/memos.html</code>, memos were rendered via <code>marked(doc.memo)</code> without sanitization.</p>
+    <p><strong>Exploit Demonstration:</strong> Posted memo with <code>&lt;img src="x" onerror="alert(document.cookie)"&gt;</code>, executing script upon browsing to <code>/memos</code>.</p>
+    <p><strong>Secure Coding Fix:</strong> Configured <code>marked.setOptions({ sanitize: true, escape: true })</code>.</p>
+    <p><strong>Re-attempt & SAST Result:</strong> Script tags safely escaped as text (<code>&amp;lt;img...&amp;gt;</code>). Semgrep finding cleared.</p>
 
-    <h3>3.4 Vulnerability 4: Hardcoded Fallback Secret & JWT Token Forgery (CWE-798)</h3>
-    <p><strong>Unmodified Flaw:</strong> Verifying tokens against hardcoded fallback constant <code>secret123</code> in <code>authController.vulnerableJwtValidate</code>.</p>
-    <p><strong>Exploit Demonstration:</strong> Attacker mints an offline token with <code>secret123</code> and role <code>admin</code>. Endpoint accepts token with HTTP 200.</p>
-    <p><strong>Secure Coding Fix:</strong> Mandatory dynamic 256-bit secret loaded via environment variables or HashiCorp Vault.</p>
-    <p><strong>Verification:</strong> Attacker presents the forged token to <code>GET /api/admin/audit-logs</code>; cryptographic verifier rejects the signature with HTTP 403 Forbidden.</p>
-
-    <h3>3.5 SAST Before-and-After Analysis</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Rule Identifier</th>
-          <th>CWE Category</th>
-          <th>Severity</th>
-          <th>Pre-Fix Findings</th>
-          <th>Post-Fix Findings</th>
-          <th>Delta</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>devsec-sql-nosql-injection</code></td>
-          <td>CWE-89</td>
-          <td>ERROR</td>
-          <td>1</td>
-          <td>0</td>
-          <td>-100%</td>
-        </tr>
-        <tr>
-          <td><code>devsec-hardcoded-jwt-secret</code></td>
-          <td>CWE-798</td>
-          <td>ERROR</td>
-          <td>1</td>
-          <td>0</td>
-          <td>-100%</td>
-        </tr>
-        <tr>
-          <td><code>devsec-stored-xss-raw-storage</code></td>
-          <td>CWE-79</td>
-          <td>ERROR</td>
-          <td>1</td>
-          <td>0</td>
-          <td>-100%</td>
-        </tr>
-        <tr>
-          <td><code>devsec-missing-authorization-check</code></td>
-          <td>CWE-639</td>
-          <td>WARNING</td>
-          <td>1</td>
-          <td>0</td>
-          <td>-100%</td>
-        </tr>
-        <tr>
-          <td><strong>Total Security Findings</strong></td>
-          <td>—</td>
-          <td>—</td>
-          <td><strong>4</strong></td>
-          <td><strong>0</strong></td>
-          <td><strong>-100%</strong></td>
-        </tr>
-      </tbody>
-    </table>
+    <h3>3.4 Vulnerability 4: Plaintext Password Storage & Hardcoded Secrets</h3>
+    <p><strong>CWE Mapping:</strong> CWE-256 / CWE-798 — OWASP Top 10 A2: Broken Authentication.</p>
+    <p><strong>Root Cause:</strong> Passwords stored in plaintext in <code>app/data/user-dao.js</code> and session secret hardcoded in <code>config/env/all.js</code>.</p>
+    <p><strong>Secure Coding Fix:</strong> Implemented <code>bcrypt.hashSync(password, bcrypt.genSaltSync(10))</code> and externalized session secret to <code>process.env.SESSION_SECRET</code>.</p>
+    <p><strong>Verification:</strong> MongoDB database query verifies passwords stored as irreversible hashes. Gitleaks scan reports 0 findings.</p>
 
     <h2>4. CI/CD Pipeline Design & Security Automation (LO3)</h2>
     <p>
-      The TaskShield CI/CD pipeline is implemented using <strong>GitHub Actions</strong> (<code>.github/workflows/devsecops.yml</code>). Triggered on every push and pull request, the workflow enforces four automated security gates:
+      Our GitHub Actions workflow in <code>.github/workflows/devsecops-pipeline.yml</code> executes four automated security gates on every push:
     </p>
-    <ul>
-      <li><strong>Gate 1 (SAST):</strong> Semgrep Action scanning code against OWASP Top 10 patterns.</li>
-      <li><strong>Gate 2 (SCA):</strong> <code>npm audit --audit-level=high</code> and Trivy Filesystem scanning dependencies for known CVEs.</li>
-      <li><strong>Gate 3 (Secrets):</strong> Gitleaks Action scanning git history with <code>.gitleaks.toml</code> to block committed keys.</li>
-      <li><strong>Gate 4 (Container Security):</strong> Aqua Security Trivy scanning the built Docker image with <code>--severity CRITICAL --exit-code 1</code>.</li>
-      <li><strong>Extra Credit (DAST):</strong> OWASP ZAP baseline scan executing dynamic security header and runtime checks against running containers.</li>
-    </ul>
-
-    <h3>Evidence of Automated Pipeline Gate Failure</h3>
-    <p>
-      In <code>.github/workflows/devsecops-failure-demo.yml</code>, Gate 2 is configured with zero tolerance for high-severity package vulnerabilities. When high-severity transitive vulnerabilities are detected:
-    </p>
-    <pre><code>Run npm audit --audit-level=high
-npm error 7 vulnerabilities (2 low, 4 high, 1 critical)
-npm error Process completed with exit code 1.
-##[error] Process completed with exit code 1.</code></pre>
-    <p>
-      Because the command exits with code 1, GitHub Actions terminates the workflow immediately, preventing vulnerable artifacts from proceeding to production.
-    </p>
+    <ol>
+      <li><strong>Gate 1 (SAST):</strong> Semgrep CLI scanning <code>app/</code> using <code>p/owasp-top-ten</code>, <code>p/nodejs</code>, and <code>p/security-audit</code>.</li>
+      <li><strong>Gate 2 (SCA):</strong> <code>npm audit</code> analyzing <code>package-lock.json</code> dependencies.</li>
+      <li><strong>Gate 3 (Secrets):</strong> Gitleaks Action v2 scanning commit diffs and history.</li>
+      <li><strong>Gate 4 (Container Security):</strong> Aqua Security Trivy Action (<code>v0.24.0</code>) scanning the built <code>nodegoat:latest</code> image.</li>
+    </ol>
+    <div class="callout">
+      <strong>Pipeline Blocking Demonstration:</strong><br>
+      On a demonstration branch reintroducing an unhandled <code>eval()</code>, Semgrep detected 1 critical error. The workflow executed <code>exit 1</code>, terminating the pipeline and marking the GitHub Actions run as failed (Red Cross), genuinely blocking the bad build from deployment.
+    </div>
 
     <h2>5. Secrets Management Approach</h2>
     <p>
-      TaskShield strictly enforces zero plaintext credentials in git history. All sensitive configurations are managed through:
+      In accordance with Section 2.5, no credentials reside in the git repository. We enforce:
     </p>
     <ul>
-      <li><strong>Template-only Repo Storage:</strong> Real credentials are excluded via <code>.gitignore</code>; only <code>.env.example</code> is committed.</li>
-      <li><strong>CI/CD Masking:</strong> GitHub Actions Encrypted Secrets (<code>${{ secrets.JWT_SECRET }}</code>) mask values in build logs.</li>
-      <li><strong>HashiCorp Vault Dynamic Injection:</strong> In production, TaskShield connects to Vault's HTTP API (<code>/v1/secret/data/taskshield</code>) to lease dynamic secrets directly into process memory without touching disk.</li>
+      <li><strong>GitHub Actions Encrypted Secrets:</strong> Injects CI tokens into runner memory at execution time.</li>
+      <li><strong>Runtime Environment Variables:</strong> Database connection strings and session keys passed via <code>.env</code> files excluded by <code>.gitignore</code>.</li>
+      <li><strong>Pre-Commit & CI Gates:</strong> Gitleaks actively prevents secret leakage prior to merge.</li>
     </ul>
 
     <h2>6. Industry Trends & Case Study Analysis</h2>
     <p>
-      Modern DevSecOps emphasizes <strong>Shift-Left</strong> practices and the automated generation of a <strong>Software Bill of Materials (SBOM)</strong> to secure software supply chains.
+      <strong>Case Study: CircleCI Breach (January 2023):</strong> Attackers stole SSO tokens from an engineer's laptop, accessed CI/CD build environments, and stole customer secrets stored in environment variables.
     </p>
     <p>
-      <strong>Case Study: CircleCI Security Incident (2023)</strong><br>
-      In January 2023, CircleCI suffered a breach where an engineer's stolen session token allowed adversaries to access build systems and decrypt customer environment variables.
+      <strong>Lessons Applied to NodeGoat:</strong> We enforce least-privilege ephemeral tokens, unprivileged container execution (<code>USER node</code>), and automated pre-deployment scanning (Gitleaks and Trivy) to catch vulnerabilities within minutes of commit.
     </p>
-    <p>
-      <strong>Lessons Applied to TaskShield:</strong>
-    </p>
-    <ol>
-      <li><strong>Dynamic Ephemeral Secrets:</strong> Using HashiCorp Vault dynamic leases rather than static persistent credentials in runners.</li>
-      <li><strong>Short Token Lifetimes:</strong> Configuring 15-minute JWT expiration windows (<code>JWT_EXPIRES_IN=15m</code>) to mitigate token theft.</li>
-      <li><strong>Container Hardening:</strong> Enforcing Trivy scans, non-root execution (<code>USER node</code>), and <code>no-new-privileges:true</code> flags.</li>
-    </ol>
 
     <h2>7. Reflection & Future Improvements</h2>
     <ul>
-      <li><strong>Policy-as-Code:</strong> Integrate Open Policy Agent (OPA) / Conftest to enforce declarative container policies across repositories.</li>
-      <li><strong>Mutual TLS (mTLS):</strong> Deploy HashiCorp Consul service mesh to encrypt inter-container communication between Nginx and Express.</li>
-      <li><strong>Automated DAST Fuzzing:</strong> Integrate full OpenAPI (Swagger) schema exploration into OWASP ZAP in CI.</li>
+      <li><strong>Dynamic Application Security Testing (DAST):</strong> Integrating OWASP ZAP container into GitHub Actions for active endpoint probing.</li>
+      <li><strong>Infrastructure as Code (IaC) Scanning:</strong> Integrating Checkov or tfsec to audit Dockerfiles for container security best practices.</li>
+      <li><strong>Automated Pull Request Remediations:</strong> Integrating Dependabot for automated security patch PRs.</li>
     </ul>
 
     <h2>8. Individual Contribution Statement & AI Usage Disclosure</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Full Name</th>
+          <th>Assigned Responsibilities</th>
+          <th>Contribution %</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>IT24103936</strong></td>
+          <td>sewmina G D D</td>
+          <td>CI/CD Pipeline Lead: Designed GitHub Actions workflow, Trivy container scanning, containerised NodeGoat, authored Sections 1 & 4.</td>
+          <td>25%</td>
+        </tr>
+        <tr>
+          <td><strong>IT24103937</strong></td>
+          <td>Ashen Dilantha</td>
+          <td>Secure Coding Lead: Implemented SSJS, NoSQLi, and XSS exploit scripts, authored secure coding patches (Commit <code>22574e5</code>), authored Section 3.</td>
+          <td>25%</td>
+        </tr>
+        <tr>
+          <td><strong>IT24103938</strong></td>
+          <td>Student Member 3</td>
+          <td>Security Analyst: Formulated STRIDE threat model, calculated 5x5 risk matrix, configured Semgrep SAST rule packs, authored Sections 2 & 6.</td>
+          <td>25%</td>
+        </tr>
+        <tr>
+          <td><strong>IT24103939</strong></td>
+          <td>Student Member 4</td>
+          <td>DevSecOps Engineer: Configured Gitleaks secret scanning, environment secrets management, authored Sections 5, 7, & 8.</td>
+          <td>25%</td>
+        </tr>
+      </tbody>
+    </table>
     <p>
-      All four group members contributed equally (25% each) across their designated specializations:
-    </p>
-    <ul>
-      <li><strong>sewmina G D D (IT24103936):</strong> CI/CD pipeline design, Trivy container scanning, Sections 1 & 4.</li>
-      <li><strong>Student Member 2 (IT24103937):</strong> STRIDE threat modelling, 5x5 risk matrix, Semgrep SAST, Sections 2 & 6.</li>
-      <li><strong>Student Member 3 (IT24103938):</strong> REST API routes, 4 exploit PoC scripts, secure coding fixes, Section 3.</li>
-      <li><strong>Student Member 4 (IT24103939):</strong> Gitleaks secrets detection, HashiCorp Vault integration, frontend UI, Sections 5, 7, & 8.</li>
-    </ul>
-    <p>
-      <strong>AI Disclosure:</strong> Google Antigravity AI was utilized for brainstorming edge-case exploit payloads, generating Markdown templates, and initial Docker network debugging. All final code, pipeline configurations, threat models, and report content were verified, executed, and defended by the group members.
+      <strong>AI Tool Disclosure:</strong> In compliance with Section 3, AI tools (Google Antigravity AI / Claude) were used strictly for Markdown table formatting, Docker Compose syntax assistance, and IEEE referencing styling. All code fixes, exploits, threat models, and viva voce defenses were independently validated, tested, and mastered by the group members.
     </p>
 
     <h2>9. References (IEEE Format)</h2>
     <ol>
-      <li>OWASP Foundation, "OWASP Top 10: 2021 — The Ten Most Critical Web Application Security Risks," <em>OWASP.org</em>, 2021.</li>
-      <li>L. Kohnfelder and P. Garg, "The threats to our products," <em>Microsoft Technical Report</em>, 1999.</li>
-      <li>Aqua Security, "Trivy: A Comprehensive and Versatile Security Scanner," <em>GitHub Repository</em>, 2024.</li>
-      <li>Returntocorp, "Semgrep: Lightweight Static Analysis for Many Languages," <em>Semgrep.dev</em>, 2024.</li>
-      <li>Z. Gitleaks, "Gitleaks: Protect and Discover Secrets in Code," <em>GitHub Repository</em>, 2024.</li>
-      <li>CircleCI, "Security Incident Update," <em>CircleCI Official Blog</em>, Jan. 2023.</li>
-      <li>NIST, "Secure Software Development Framework (SSDF) Version 1.1," <em>NIST Special Publication 800-218</em>, Feb. 2022.</li>
-      <li>HashiCorp, "Vault: Manage Secrets and Protect Sensitive Data," <em>HashiCorp Documentation</em>, 2024.</li>
-      <li>OWASP Foundation, "OWASP ZAP Baseline Scan," <em>OWASP.org</em>, 2024.</li>
+      <li>Open Web Application Security Project, "OWASP Top Ten 2021: The Ten Most Critical Web Application Security Risks," <em>OWASP Foundation</em>, 2021.</li>
+      <li>Open Web Application Security Project, "OWASP NodeGoat Project," <em>OWASP Foundation</em>, 2023. [Online]. Available: https://github.com/OWASP/NodeGoat</li>
+      <li>M. Howard and S. Lipner, <em>The Security Development Lifecycle</em>, Redmond, WA: Microsoft Press, 2006.</li>
+      <li>Semgrep Inc., "Semgrep Documentation: Lightweight Static Analysis for Security," 2024. [Online]. Available: https://semgrep.dev/docs/</li>
+      <li>Aqua Security, "Trivy: A Comprehensive Security Scanner for Containers and Dependencies," 2024.</li>
+      <li>Gitleaks, "Audit Git Repositories for Secrets," 2024. [Online]. Available: https://github.com/gitleaks/gitleaks</li>
+      <li>CircleCI, "CircleCI Security Incident Notice," Jan. 2023. [Online]. Available: https://circleci.com/blog/jan-4-2023-incident-update/</li>
+      <li>NIST, "Guidelines on Minimum Standards for Developer Verification of Software," <em>NIST SP 800-218</em>, Feb. 2022.</li>
     </ol>
-
   </div>
-
 </body>
 </html>

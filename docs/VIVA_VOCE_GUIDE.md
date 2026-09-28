@@ -1,6 +1,7 @@
 # IE3142: DevOps Security — Viva Voce Preparation Guide (25 Marks)
 **Academic Year:** 2026 | **Year 3 Semester 1** | **Faculty of Computing, SLIIT**  
-**Project:** TaskShield DevSecOps Platform  
+**Project:** OWASP NodeGoat DevSecOps Platform (Appendix A.1)  
+**Repository:** `https://github.com/ashendilantha/nodegoat-devsecops`  
 
 This preparation manual is structured directly around the **Viva Voce Assessment Rubric (Pages 10–11 of the Assignment Specification)**. Every team member must master these core questions and scenario defenses.
 
@@ -11,19 +12,18 @@ This preparation manual is structured directly around the **Viva Voce Assessment
 ### Expected Questions & Model Answers:
 **Q1: Walk me through your application architecture and explain how components communicate.**
 > **Answer:**  
-> TaskShield uses a three-tier containerised architecture comprising:
-> 1. **Presentation Tier (Frontend & Reverse Proxy):** An Nginx Alpine container serving a single-page application and acting as a reverse proxy. It listens on host port 8080 and sets mandatory HTTP security headers (Helmet CSP, HSTS, X-Frame-Options: DENY).
-> 2. **Application Tier (Backend Microservice):** A Node.js and Express REST API running on port 5000 in an isolated internal bridge network (`app-network`). It processes authentication, executes business logic, enforces Joi schema validation, and issues/verifies HS256 JWTs.
-> 3. **Persistence Tier:** Relational database storage (SQLite persistent volume or PostgreSQL) maintaining isolated user, note, and immutable audit log tables.
-> Ingress traffic flows from the browser to Nginx via HTTPS/TLS, which proxies API calls internally over HTTP to the backend.
+> We selected **OWASP NodeGoat**, an approved application under **Appendix A.1 (Intentionally Vulnerable Applications)**. It uses a two-tier containerised architecture orchestrated via `docker-compose.yml`:
+> 1. **Web Application Tier (Node.js/Express):** Runs on port 4000 (and 5000 in dev). It serves dynamic HTML views via Swig templating, handles session management, and exposes controllers for employee retirement contributions, allocations, memos, and user profiles.
+> 2. **Database Persistence Tier (MongoDB 4.4):** Runs on port 27017 within an isolated internal Docker bridge network (`nodegoat-net`). It stores documents across collections for `users`, `allocations`, `memos`, and sequence `counters`.
+> Communication between the Node.js application and MongoDB takes place over TCP via Mongoose and native MongoDB driver connections using Data Access Objects (`user-dao.js`, `allocations-dao.js`, `memos-dao.js`).
 
 **Q2: What trust boundaries exist in your architecture?**
 > **Answer:**  
-> We have mapped four explicit trust boundaries:
-> - **Boundary 1 (Public Internet vs DMZ):** Separates untrusted end-users and attackers from our perimeter.
-> - **Boundary 2 (DMZ vs Internal Network):** Nginx terminates outside traffic and passes sanitized reverse-proxy traffic to the internal container network.
-> - **Boundary 3 (API Controller vs Business Logic):** Input validation middleware (Joi) and rate limiting guard internal route handlers against malformed input and brute-forcing.
-> - **Boundary 4 (Application vs Database/Secrets):** Database queries are isolated behind parameterized database drivers; runtime secrets are injected directly into process memory from HashiCorp Vault or environment variables, completely absent from public storage.
+> We mapped four explicit trust boundaries:
+> - **Boundary 1 (Public Client vs Ingress):** Separates untrusted public end-users and attackers from the application on port 4000.
+> - **Boundary 2 (Application Tier vs Database Tier):** Isolates the MongoDB database from the outside world inside the private Docker network; direct access from external networks is blocked.
+> - **Boundary 3 (User Input vs Internal Execution):** Input parameters (form posts, query strings) are validated before being passed to sensitive functions or database queries.
+> - **Boundary 4 (Configuration & Secrets vs Code Repository):** Sensitive credentials (`MONGODB_URI`, `SESSION_SECRET`) are injected via environment variables and GitHub Actions secrets at runtime, ensuring zero plaintext secrets exist in git.
 
 ---
 
@@ -32,38 +32,47 @@ This preparation manual is structured directly around the **Viva Voce Assessment
 ### Expected Questions & Model Answers:
 **Q1: How did you apply STRIDE to your architecture? Can you give an example of a threat for 'T' (Tampering) and 'E' (Elevation of Privilege)?**
 > **Answer:**  
-> - **Tampering (T):** Stored Cross-Site Scripting (XSS) in task descriptions. An authenticated user inputs persistent `<script>` or `<img onerror=...>` payloads into the database. When other users view the note, the script executes in their browser context. We mitigated this by integrating `sanitize-html` to whitelist safe markup and enforcing a strict Content-Security-Policy (CSP) via Helmet.
-> - **Elevation of Privilege (E):** Broken Object Level Authorization (BOLA/IDOR). User Bob could modify the URL parameter from `/api/notes/2` to `/api/notes/1` to access Alice's confidential budget. We mitigated this by implementing an object ownership guard in `noteController.js` requiring `note.userId === req.user.id || req.user.role === 'admin'`.
+> - **Tampering (T):** Server-Side JavaScript Injection (SSJS) in `contributions.js`. An attacker submits JavaScript code into retirement contribution input fields (`preTax`), which the server executes via `eval()`. This allows tampering with calculations or executing arbitrary commands on the server. We mitigated this by removing `eval()` and strictly parsing inputs with `parseInt(req.body.preTax, 10)` (Commit `22574e5`).
+> - **Elevation of Privilege (E):** Insecure Direct Object Reference (IDOR/BOLA) in `allocations.js`. A standard employee could change the URL parameter `/allocations/:userId` from their own ID to an administrative ID to inspect confidential retirement asset allocations. We mitigated this by deriving identity directly from the authenticated session (`req.session.userId`) rather than trusting URL parameters.
 
 **Q2: How did you calculate your risk scores in the 5x5 matrix?**
 > **Answer:**  
 > Risk Score = Likelihood (1–5) × Impact (1–5).  
-> For SQL Injection (TH-04):
-> - Likelihood is **4 (Likely)** because authentication endpoints are public and attackers routinely automate credential attacks.
-> - Impact is **5 (Catastrophic)** because a successful SQL tautology bypasses authentication and allows full schema exfiltration.
-> - Total Score: 20 (Critical Risk), demanding immediate preventative controls (parameterized queries).
+> For SSJS Injection (TH-02):
+> - Likelihood is **4 (Likely)** because retirement contribution input fields are accessible to authenticated users and parameter manipulation is straightforward with web proxies.
+> - Impact is **5 (Catastrophic)** because `eval()` executes in the Node.js process context, allowing Remote Code Execution (RCE) and total host compromise.
+> - Total Score: 20 (Critical Risk), demanding immediate preventative remediation.
 
 ---
 
 ## Criterion 3: Vulnerability Assessment & Secure Coding Fixes (5 Marks)
 
 ### Expected Questions & Model Answers:
-**Q1: Demonstrate and explain your SQL Injection vulnerability and how you remediated it.**
+**Q1: Demonstrate and explain your SSJS Injection vulnerability and how you remediated it.**
 > **Answer:**  
-> - **The Flaw:** In `authController.vulnerableLogin`, raw SQL concatenation was used:
->   `SELECT * FROM users WHERE username = '${username}'`.
-> - **The Exploit:** We passed `admin' OR '1'='1` in the username. The SQL engine evaluates the condition as true for all rows, returning the first record (admin) without checking the password.
-> - **The Fix:** In `authController.login`, we implemented parameterized queries with SQLite placeholders (`SELECT * FROM users WHERE username = ?`, `[username]`) alongside Joi alphanumeric input validation.
-> - **Verification:** When re-running the exact same exploit payload, the server returns HTTP 400 Validation Error (`username must only contain alpha-numeric characters`), stopping execution before the database is ever touched.
+> - **The Flaw:** In `app/routes/contributions.js`, user-supplied contribution values were evaluated using JavaScript's `eval()`:
+>   `const preTax = eval(req.body.preTax);`
+> - **The Exploit:** We sent a POST payload: `preTax=10; res.end(require('child_process').execSync('whoami').toString())`. The server executed the command and streamed the server username back in the HTTP response.
+> - **The Fix:** In commit `22574e5`, we eliminated `eval()` completely and used `parseInt(req.body.preTax, 10)`.
+> - **Verification:** When repeating the exploit, `parseInt()` treats the input as inert text, returning `10` without executing the injected child process command.
 
-**Q2: What were your Semgrep SAST results before and after fixing the 4 vulnerabilities?**
+**Q2: Demonstrate and explain your NoSQL Injection vulnerability and remediation.**
 > **Answer:**  
-> - **Before Fix:** Semgrep identified 4 Critical/Error findings:
->   1. `devsec-sql-nosql-injection` (CWE-89) in `authController.js`
->   2. `devsec-hardcoded-jwt-secret` (CWE-798) in `authController.js`
->   3. `devsec-stored-xss-raw-storage` (CWE-79) in `noteController.js`
->   4. `devsec-missing-authorization-check` (CWE-639) in `noteController.js`
-> - **After Fix:** On all production routes (`/api/auth/login`, `/api/notes`), SAST findings dropped to **0 findings**, representing a **100% reduction** in exploitable vulnerabilities.
+> - **The Flaw:** In `app/data/allocations-dao.js`, dynamic string concatenation was used inside a MongoDB `$where` clause:
+>   `$where: "this.userId == " + parsedUserId + " && this.stocks > '" + threshold + "'"`
+> - **The Exploit:** We passed `threshold=1'; return 1 == '1`. The injected JavaScript returns `true` for all records, dumping the entire company's allocation records.
+> - **The Fix:** We replaced the `$where` JavaScript clause with native MongoDB query operators:
+>   `{ userId: parsedUserId, stocks: { $gt: parsedThreshold } }` combined with integer validation (`parseInt(threshold, 10)`).
+> - **Verification:** Malicious JavaScript syntax is rejected or evaluated strictly as a numerical value, completely preventing query logic manipulation.
+
+**Q3: What were your Semgrep SAST results before and after fixing the vulnerabilities?**
+> **Answer:**  
+> - **Before Fix:** Semgrep identified critical findings:
+>   1. `javascript.lang.security.audit.eval-with-expression` (SSJS in `contributions.js`)
+>   2. `javascript.express.mongodb.nosql-injection` (NoSQLi in `allocations-dao.js`)
+>   3. `javascript.browser.security.raw-html-format` (Stored XSS in `memos.html`)
+>   4. Cleartext password assignment in `user-dao.js`
+> - **After Fix:** All targeted findings were resolved to **0 findings**, representing a **100% reduction** in verified high-severity vulnerabilities.
 
 ---
 
@@ -72,37 +81,42 @@ This preparation manual is structured directly around the **Viva Voce Assessment
 ### Expected Questions & Model Answers:
 **Q1: What are your four automated security gates in GitHub Actions?**
 > **Answer:**  
-> 1. **Gate 1 (SAST):** Semgrep scanning for coding flaws and OWASP Top 10 patterns.
-> 2. **Gate 2 (SCA):** `npm audit --audit-level=high` and Trivy Filesystem scanning third-party dependencies for known CVEs.
-> 3. **Gate 3 (Secrets):** Gitleaks scanning commits and git history using `.gitleaks.toml` to prevent committed credentials.
-> 4. **Gate 4 (Container Security):** Trivy scanning the built Docker image (`aquasecurity/trivy-action`) with `--severity CRITICAL --exit-code 1`.
-> 5. **Extra Credit (DAST):** OWASP ZAP baseline scan executing active and passive scans against the running container endpoints.
+> Defined in `.github/workflows/devsecops-pipeline.yml`:
+> 1. **Gate 1 (SAST):** Semgrep scanning `app/` using `p/owasp-top-ten`, `p/nodejs`, and `p/security-audit` rules.
+> 2. **Gate 2 (SCA):** `npm audit` scanning `package-lock.json` for known vulnerable third-party dependencies.
+> 3. **Gate 3 (Secrets):** `gitleaks/gitleaks-action@v2` scanning commit diffs and history for leaked credentials and keys.
+> 4. **Gate 4 (Container Security):** `aquasecurity/trivy-action@v0.24.0` scanning the built `nodegoat:latest` Docker image for base OS and library CVEs.
 
 **Q2: How does your pipeline block a bad build? Prove that it genuinely fails rather than just warns.**
 > **Answer:**  
-> In `.github/workflows/devsecops-failure-demo.yml` and Gate 2 of our CI/CD pipeline, we configure `npm audit --audit-level=high` and Trivy with `--exit-code 1`. When a high-severity transitive vulnerability or leaked credential is introduced, the command returns exit code 1. GitHub Actions detects the non-zero exit status, immediately aborts subsequent deployment stages, and marks the workflow run as failed with a red badge, preventing vulnerable code from reaching production.
+> In Gate 1 (Semgrep), our workflow script inspects the generated `semgrep-results.json` using `jq`. If the count of critical findings exceeds threshold, the step executes `exit 1`:
+> ```bash
+> if [ $CRITICAL -gt 0 ]; then
+>   echo "SAST gate FAILED: Critical findings detected"
+>   exit 1
+> fi
+> ```
+> In Gate 4 (Trivy), we configure `--exit-code 1 --severity CRITICAL`. GitHub Actions captures the non-zero exit code, immediately halts the workflow, prevents container deployment, and flags the run with a red failed status.
 
 ---
 
 ## Criterion 5: Industry Trends & Case Study Analysis (2 Marks)
 
 ### Expected Questions & Model Answers:
-**Q1: Relate your project practices to a recent major supply-chain security breach (e.g. SolarWinds or CircleCI).**
+**Q1: Relate your project practices to a recent major supply-chain security breach (e.g. CircleCI).**
 > **Answer:**  
-> In the **CircleCI security incident (January 2023)**, an engineer's laptop was compromised with malware that stole session tokens, allowing attackers to access internal build systems and customer-encrypted environment variables.
-> **Lessons applied to TaskShield:**
-> 1. **Shift-Left Secrets Management:** Instead of storing persistent plaintext credentials in CI runners or repos, we use ephemeral tokens and HashiCorp Vault dynamic runtime injection.
-> 2. **Short-lived Tokens:** Our JWTs and pipeline tokens expire within 15 minutes (`JWT_EXPIRES_IN=15m`), severely narrowing the window of opportunity for stolen session tokens.
-> 3. **Container Immutability & SBOM:** We scan container base images with Trivy to guarantee no malicious upstream dependencies are packaged into our release artifacts.
+> In the **CircleCI incident (January 2023)**, attackers stole engineer SSO session tokens from a compromised laptop, accessed build pipelines, and harvested customer secrets stored in environment variables.
+> **Lessons applied to our DevSecOps pipeline:**
+> 1. **Zero Hardcoded Secrets & Dynamic Ingestion:** We enforce strict Gitleaks pre-commit and CI scans, ensuring no secrets enter git.
+> 2. **Least-Privilege Scoping:** Pipeline tokens are ephemeral and scoped with minimal required permissions.
+> 3. **Automated SCA & Container Scanning:** We run `npm audit` and Trivy on every commit to ensure third-party supply-chain packages contain no backdoors or unpatched CVEs.
 
 ---
 
 ## Criterion 6 & 7: Technical Problem-Solving & Defense Tips
 
-1. **Be Specific:** Always reference the actual file names:
-   - `backend/src/controllers/authController.js`
-   - `backend/src/middleware/validator.js`
-   - `.github/workflows/devsecops.yml`
-   - `.gitleaks.toml`
-2. **Demonstrate Working Evidence:** Be ready to show `node scripts/run_all_exploits.js` and open the local UI at `http://localhost:5000` to execute live attacks and fixes right in front of the assessor.
-3. **Emphasize the Mindset:** Emphasize that DevSecOps is not an afterthought checklist, but an automated, shift-left pipeline with enforced quality gates.
+### Key Tips for the Viva:
+- **Be Concise and Direct:** Answer the question first, then provide 1–2 sentences of technical justification.
+- **Reference Specific Files and Lines:** Mention `app/routes/contributions.js` for SSJS, `app/data/allocations-dao.js` for NoSQLi, and `.github/workflows/devsecops-pipeline.yml` for the CI/CD pipeline.
+- **Explain "Why", Not Just "What":** When asked why you removed `eval()`, explain that `eval()` passes unparsed strings into the V8 JavaScript compiler, executing arbitrary code with full process permissions.
+- **Emphasize Appendix A.1 Compliance:** Clearly state that NodeGoat was selected from **Appendix A.1 of the IE3142 module brief** as a pre-vetted, containerised application with authentic OWASP Top 10 vulnerabilities.
